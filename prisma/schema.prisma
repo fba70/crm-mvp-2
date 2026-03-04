@@ -1,0 +1,279 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean
+  image         String?
+  role          String?
+  createdAt     DateTime
+  updatedAt     DateTime
+  sessions      Session[]
+  accounts      Account[]
+
+  // Back relations
+  createdTasks    Task[]    @relation("CreatedTasks")
+  assignedTasks   Task[]    @relation("AssignedTasks")
+  createdClients  Client[]  @relation("CreatedClients")
+  transferredTasks Task[]   @relation("TransferredTasks")
+  createdContacts Contact[] @relation("CreatedContacts")
+  collaboratedTasks Task[]  @relation("TaskCollaborators")
+
+  likes       Like[]
+
+  notifications Notification[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verification")
+}
+
+enum TaskType {
+  CALL
+  MEET
+  EMAIL
+  OFFER
+  PRESENTATION
+}
+
+enum TaskPriority {
+  LOW   
+  MEDIUM 
+  HIGH   
+}
+
+enum TaskStatus {
+  OPEN
+  CLOSED
+  DELETED
+}
+
+enum TransferStatus {
+  ACCEPTED
+  REJECTED
+  UNDEFINED
+}
+
+model Task {
+  id              String   @id @default(uuid())
+  type            TaskType
+  priority        TaskPriority
+  status          TaskStatus @default(OPEN)
+  theme           String?
+  date            DateTime?
+  contactPhone    String?
+  contactEmail    String?
+  contactPerson   String?  // obsolete, Contact model is used instead
+  address         String?
+  urlLink         String?
+  statusChangeReason String?
+
+  // Relations
+  clientId        String?
+  client          Client?   @relation(fields: [clientId], references: [id])
+
+  contactId       String?
+  contact         Contact? @relation(fields: [contactId], references: [id])
+
+  createdById     String
+  createdBy       User     @relation("CreatedTasks", fields: [createdById], references: [id])
+  assignedToId    String?
+  assignedTo      User?    @relation("AssignedTasks", fields: [assignedToId], references: [id])
+
+  // Collaborating users
+  collaborators   User[]   @relation("TaskCollaborators")
+
+  // Linked tasks
+  parentTaskId    String?   
+  parentTask      Task?     @relation("TaskLinks", fields: [parentTaskId], references: [id])
+  linkedTasks     Task[]    @relation("TaskLinks")
+
+// Task transfer fields
+  transferToId      String?   
+  transferTo        User?     @relation("TransferredTasks", fields: [transferToId], references: [id])
+  transferToReason  String?
+  transferStatus    TransferStatus @default(UNDEFINED)
+  rejectionReason   String?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Back relations
+  feeds          Feed[]
+
+  @@map("task")
+}
+
+model Client {
+  id              String   @id @default(uuid())
+  name            String
+  email           String?
+  phone           String?
+  address         String?
+  webUrl          String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  createdById     String?
+  createdBy       User?    @relation("CreatedClients", fields: [createdById], references: [id])
+
+  // Back relation
+  tasks           Task[]
+  feeds           Feed[]
+  contacts        Contact[]
+
+  @@map("client")
+}
+
+model Contact {
+  id          String   @id @default(uuid())
+  name        String
+  phone       String?
+  email       String?
+  position    String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  clientId    String?  // Optional reference to Client
+  client      Client?  @relation(fields: [clientId], references: [id])
+
+// Back relations
+  tasks       Task[]
+
+  createdById     String?
+  createdBy       User?    @relation("CreatedContacts", fields: [createdById], references: [id])
+
+  // @@map("contact") - update in production to change table name
+}
+
+model Feed {
+  id            String       @id @default(uuid())
+  type          FeedType
+  status        FeedStatus   @default(NEW)
+  actionCall    Boolean?     @default(false)
+  actionEmail   Boolean?     @default(false)
+  actionBooking Boolean?     @default(false)
+  actionTask    Boolean?     @default(false)
+  metadata      String?
+  feedback      String?
+  feedbackBooking String?
+
+  // Relations
+  clientId      String?
+  client        Client?      @relation(fields: [clientId], references: [id])
+  taskId        String?
+  task          Task?        @relation(fields: [taskId], references: [id])
+
+  likes         Like[]
+
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@map("feed")
+}
+
+enum FeedType {
+  RECOMMENDATION
+  CLIENT_ACTIVITY
+  INDUSTRY_INFO
+  COLLEAGUES_UPDATE
+}
+
+enum FeedStatus {
+  NEW
+  CANCELLED
+  IN_PROGRESS
+  ACTION_COMPLETED
+  CLOSED
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  userId    String
+  feedId    String
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  feed      Feed?    @relation(fields: [feedId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, feedId]) // Ensure a user can like a feed item only once
+  @@map("like")
+}
+
+enum NotificationType {
+  GENERAL
+  TRANSFER
+  FEED
+  ACCEPTED
+  REJECTED
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  recipientId String?
+  senderId    String?
+  sender      User?    @relation(fields: [senderId], references: [id])
+  message     String?
+  type        NotificationType @default(GENERAL)
+  read        Boolean  @default(false)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("notification")
+}
