@@ -14,12 +14,10 @@ export const auth = betterAuth({
     github: {
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      // redirectURI: "https://crm-mvp-2025.vercel.app/api/auth/callback/github",
     },
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      // redirectURI: "https://crm-mvp-2025.vercel.app/api/auth/callback/google",
     },
   },
   emailAndPassword: {
@@ -96,8 +94,16 @@ export const auth = betterAuth({
   }, // This hook is to implement zod validation on a back-end side
   plugins: [
     oAuthProxy({
-      productionURL: "https://truffalo-app.vercel.app",
-      currentURL: "http://localhost:3000",
+      productionURL:
+        process.env.NEXT_PUBLIC_PRODUCTION_URL ||
+        process.env.NEXT_PUBLIC_BASE_URL ||
+        `https://${process.env.VERCEL_URL}` ||
+        "https://truffalo-app.vercel.app",
+      currentURL:
+        process.env.NEXT_PUBLIC_BASE_URL ||
+        (process.env.VERCEL_URL
+          ? `https://${process.env.VERCEL_URL}`
+          : "http://localhost:3000"),
     }),
   ],
 })
