@@ -96,11 +96,8 @@ export const auth = betterAuth({
   }, // This hook is to implement zod validation on a back-end side
   plugins: [
     oAuthProxy({
-      productionURL: process.env.NEXT_PUBLIC_PRODUCTION_URL,
-      currentURL:
-        process.env.NEXT_PUBLIC_BASE_URL ||
-        process.env.NEXTAUTH_URL ||
-        "http://localhost:3000",
+      productionURL: "https://truffalo-app.vercel.app",
+      currentURL: "http://localhost:3000",
     }),
   ],
 })
