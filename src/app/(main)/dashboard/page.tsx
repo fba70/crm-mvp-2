@@ -94,19 +94,21 @@ export default async function DashboardPage() {
 
         {user.emailVerified ? null : <EmailVerificationAlert />}
 
-        <TasksSummary
-          totalNumberOfTasks={totalNumberOfTasks}
-          numberOfUrgentTasks={numberOfDueSoonTasks}
-          numberOfOverdueTasks={numberOfOverdueTasks}
-        />
+        <div className="flex flex-row items-center justify-between gap-4">
+          <TasksSummary
+            totalNumberOfTasks={totalNumberOfTasks}
+            numberOfUrgentTasks={numberOfDueSoonTasks}
+            numberOfOverdueTasks={numberOfOverdueTasks}
+          />
 
-        <FeedSummary
-          totalNumberOfFeeds={totalNumberOfFeeds}
-          numberOfRecommendationFeeds={numberOfRecommendationFeeds}
-          numberOfClientActivityFeeds={numberOfClientActivityFeeds}
-          numberOfIndustryInfoFeeds={numberOfIndustryInfoFeeds}
-          numberOfColleaguesUpdatesFeeds={numberOfColleaguesUpdatesFeeds}
-        />
+          <FeedSummary
+            totalNumberOfFeeds={totalNumberOfFeeds}
+            numberOfRecommendationFeeds={numberOfRecommendationFeeds}
+            numberOfClientActivityFeeds={numberOfClientActivityFeeds}
+            numberOfIndustryInfoFeeds={numberOfIndustryInfoFeeds}
+            numberOfColleaguesUpdatesFeeds={numberOfColleaguesUpdatesFeeds}
+          />
+        </div>
 
         <BudgetCharts />
       </div>
@@ -124,39 +126,36 @@ function TasksSummary({
   numberOfOverdueTasks: number
 }) {
   return (
-    <Card>
-      <CardHeader>
+    <Card className="w-[35%]">
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
           <ClipboardList size={24} />
           Tasks Summary
         </CardTitle>
+        <Button className="ml-auto" asChild>
+          <Link href="/tasks">View Tasks</Link>
+        </Button>
       </CardHeader>
       <CardContent className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-row gap-2 sm:items-start">
-          <div className="flex flex-row gap-3 sm:items-start">
-            <p>
-              <span className="text-sm text-gray-400">Total:</span>
-              <span className="pl-2 text-2xl text-blue-600">
-                {totalNumberOfTasks}
-              </span>
-            </p>
-            <p>
-              <span className="text-sm text-gray-400">Urgent:</span>
-              <span className="pl-2 text-2xl text-orange-400">
-                {numberOfUrgentTasks}
-              </span>
-            </p>
-            <p>
-              <span className="text-sm text-gray-400">Overdue:</span>
-              <span className="pl-2 text-2xl text-red-600">
-                {numberOfOverdueTasks}
-              </span>
-            </p>
-          </div>
-
-          <Button className="ml-auto" asChild>
-            <Link href="/tasks">View Tasks</Link>
-          </Button>
+        <div className="flex flex-row gap-3 sm:items-start">
+          <p>
+            <span className="text-sm text-gray-400">Total:</span>
+            <span className="pl-2 text-2xl text-blue-600">
+              {totalNumberOfTasks}
+            </span>
+          </p>
+          <p>
+            <span className="text-sm text-gray-400">Urgent:</span>
+            <span className="pl-2 text-2xl text-orange-400">
+              {numberOfUrgentTasks}
+            </span>
+          </p>
+          <p>
+            <span className="text-sm text-gray-400">Overdue:</span>
+            <span className="pl-2 text-2xl text-red-600">
+              {numberOfOverdueTasks}
+            </span>
+          </p>
         </div>
       </CardContent>
     </Card>
@@ -177,50 +176,45 @@ function FeedSummary({
   numberOfColleaguesUpdatesFeeds: number
 }) {
   return (
-    <Card>
-      <CardHeader>
+    <Card className="w-[65%]">
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
           <MessageSquareQuote size={24} />
           Feed Summary
         </CardTitle>
+        <Button className="ml-auto" asChild>
+          <Link href="/feed">View Feed</Link>
+        </Button>
       </CardHeader>
       <CardContent className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-row gap-2 sm:items-start">
+        <div className="flex flex-row gap-4 sm:items-start">
           <p>
             <span className="text-sm text-gray-400">Total:</span>
             <span className="pl-2 text-2xl text-blue-600">
               {totalNumberOfFeeds}
             </span>
           </p>
-
-          <Button className="ml-auto" asChild>
-            <Link href="/feed">View Feed</Link>
-          </Button>
-        </div>
-        <div className="flex flex-row gap-2 sm:items-start">
-          <p className="min-w-[180px]">
+          <p>
             <span className="text-sm text-gray-400">Recommendations:</span>
-            <span className="pl-2 text-xl text-gray-600">
+            <span className="pl-2 text-2xl text-gray-600">
               {numberOfRecommendationFeeds}
             </span>
           </p>
           <p>
             <span className="text-sm text-gray-400">Client activity:</span>
-            <span className="pl-2 text-xl text-gray-600">
+            <span className="pl-2 text-2xl text-gray-600">
               {numberOfClientActivityFeeds}
             </span>
           </p>
-        </div>
-        <div className="flex flex-row gap-2 sm:items-start">
-          <p className="min-w-[180px]">
+          <p>
             <span className="text-sm text-gray-400">Industry news:</span>
-            <span className="pl-2 text-xl text-gray-600">
+            <span className="pl-2 text-2xl text-gray-600">
               {numberOfIndustryInfoFeeds}
             </span>
           </p>
           <p>
             <span className="text-sm text-gray-400">Colleagues:</span>
-            <span className="pl-2 text-xl text-gray-600">
+            <span className="pl-2 text-2xl text-gray-600">
               {numberOfColleaguesUpdatesFeeds}
             </span>
           </p>
@@ -247,63 +241,3 @@ function EmailVerificationAlert() {
     </div>
   )
 }
-
-/*
-<ProfileInformation user={user} />
-
-interface ProfileInformationProps {
-  user: User
-}
-
-function ProfileInformation({ user }: ProfileInformationProps) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <UserIcon size={24} />
-          Profile Information
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-row gap-6 sm:flex-row sm:items-start">
-          <div className="flex flex-col items-center gap-3">
-            <UserAvatar
-              name={user.name}
-              image={user.image}
-              className="size-16 sm:size-16"
-            />
-            {user.role && (
-              <Badge>
-                <ShieldIcon size={16} />
-                {user.role}
-              </Badge>
-            )}
-          </div>
-
-          <div className="flex-1 space-y-4">
-            <div>
-              <h3 className="text-xl font-semibold capitalize">{user.name}</h3>
-              <p className="text-muted-foreground">{user.email}</p>
-            </div>
-
-            <div className="flex flex-row items-center justify-between gap-4">
-              <div>
-                <div className="text-muted-foreground flex items-center gap-2 text-sm">
-                  <CalendarDaysIcon size={18} />
-                  User Since
-                </div>
-                <p className="font-medium">
-                  {format(user.createdAt, "MMMM d, yyyy")}
-                </p>
-              </div>
-              <Button variant="default" asChild>
-                <Link href="/profile">Edit Profile</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-*/

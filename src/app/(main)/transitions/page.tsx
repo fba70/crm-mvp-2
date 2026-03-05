@@ -132,11 +132,11 @@ export default function TaskTransitionsPage() {
           <TabsContent value="toMe">
             {tasksToMe.length > 0 && (
               <>
-                <div className="mt-2 flex w-[400px] flex-col items-center justify-center gap-2">
+                <div className="mt-2 flex w-full flex-row flex-wrap items-center justify-center gap-2">
                   {paginatedTasksToMe.map((task) => (
                     <div
                       key={task.id}
-                      className="w-[95%] rounded-lg border border-gray-300 px-4 py-2 shadow-sm"
+                      className="rounded-lg border border-gray-300 px-4 py-4 shadow-sm"
                     >
                       <h3 className="mb-2 text-base font-semibold">
                         {task.theme}
@@ -268,11 +268,11 @@ export default function TaskTransitionsPage() {
           <TabsContent value="fromMe">
             {tasksFromMe.length > 0 && (
               <>
-                <div className="mt-2 flex w-[400px] flex-col items-center justify-center gap-2">
+                <div className="mt-2 flex w-full flex-row flex-wrap items-center justify-center gap-2">
                   {paginatedTasksFromMe.map((task) => (
                     <div
                       key={task.id}
-                      className="w-[95%] rounded-lg border border-gray-300 px-4 py-2 shadow-sm"
+                      className="rounded-lg border border-gray-300 px-4 py-4 shadow-sm"
                     >
                       <h3 className="mb-2 text-base font-semibold">
                         {task.theme}

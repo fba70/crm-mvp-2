@@ -100,7 +100,7 @@ export default function ClientsPage() {
           <TabsContent value="clients">
             {/* Clients Section */}
             <div className="mb-4 flex flex-row items-center justify-between gap-3 px-4">
-              <div className="ml-2 w-full">
+              <div className="w-full">
                 <input
                   type="text"
                   placeholder="Search clients by name..."
@@ -126,7 +126,7 @@ export default function ClientsPage() {
           <TabsContent value="contacts">
             {/* Contacts Section */}
             <div className="mb-4 flex flex-row items-center justify-between gap-3 px-4">
-              <div className="ml-2 w-full">
+              <div className="w-full">
                 <input
                   type="text"
                   placeholder="Search contacts by name..."
@@ -164,9 +164,9 @@ function ClientCards({
 }) {
   return (
     <div className="flex flex-col items-center justify-center">
-      <div className="grid h-[580px] w-[95%] grid-cols-1 gap-2 overflow-y-auto sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid h-full w-full grid-cols-1 gap-2 overflow-y-auto sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
         {clients.map((client) => (
-          <Card key={client.id} className="w-[95%] pt-4 pb-6">
+          <Card key={client.id} className="w-full pt-4 pb-6">
             <CardContent className="flex flex-col gap-3 px-6 py-0">
               <div className="flex flex-row items-center justify-between gap-2">
                 <div className="text-lg font-semibold">{client.name}</div>
@@ -262,9 +262,9 @@ function ContactCards({
 }) {
   return (
     <div className="flex flex-col items-center justify-center">
-      <div className="grid h-[580px] w-[95%] grid-cols-1 gap-2 overflow-y-auto sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid h-full w-full grid-cols-1 gap-2 overflow-y-auto sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
         {contacts.map((contact) => (
-          <Card key={contact.id} className="h-auto pt-4 pb-4">
+          <Card key={contact.id} className="w-full pt-4 pb-6">
             <CardContent className="flex flex-col gap-3 px-6 py-0">
               <div className="flex flex-row items-center justify-between gap-2">
                 <div className="text-lg font-semibold">{contact.name}</div>

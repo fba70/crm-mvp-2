@@ -17,9 +17,9 @@ export async function Navbar() {
   }
 
   return (
-    <header className="border-b bg-gradient-to-b from-blue-500 to-cyan-500">
+    <header className="border-b bg-gradient-to-b from-blue-500 to-fuchsia-500">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        <Link href="/dashboard" className="flex items-center gap-2 text-white">
+        <Link href="/dashboard" className="flex items-center gap-4 text-white">
           <Image
             src="/T_logo_2.jpg"
             alt="TRUFFALO.AI Logo"
@@ -27,7 +27,7 @@ export async function Navbar() {
             height={36}
             className="rounded-full border-2 border-blue-300"
           />
-          <span className="text-xl font-semibold text-white">TRUFFALO.AI</span>
+          <span className="text-2xl font-semibold text-white">TRUFFALO.AI</span>
         </Link>
         <div className="flex items-center gap-2">
           <NewsDrawer userId={user?.id} />

@@ -211,7 +211,7 @@ function FeedCards({
 
   return (
     <div className="flex flex-col items-center justify-center">
-      <div className="grid h-[680px] w-[95%] grid-cols-1 gap-2 overflow-y-auto sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid h-full w-full grid-cols-1 gap-2 overflow-y-auto sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
         {feed.map((feedItem) => (
           <Card key={feedItem.id} className="py-3">
             <CardContent className="flex flex-col gap-1 px-4 py-0">
