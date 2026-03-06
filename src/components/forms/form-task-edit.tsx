@@ -211,7 +211,7 @@ export default function FormTaskEditDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="default" className="mx-auto">
+        <Button variant="default" className="">
           {triggerLabel}
         </Button>
       </DialogTrigger>

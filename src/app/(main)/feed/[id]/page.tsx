@@ -239,7 +239,7 @@ export default function FeedItemPage() {
         </div>
       </div>
 
-      <div className="max-h-190 overflow-y-auto">
+      <div className="overflow-y-auto">
         <Card className="mx-auto mt-6 flex w-[95%] flex-col py-4">
           <CardContent className="flex flex-col gap-2 px-5 py-0">
             <div className="flex flex-row items-center justify-between gap-2">
@@ -337,7 +337,7 @@ export default function FeedItemPage() {
                       </div>
                     </DialogContent>
                   </Dialog>
-                  <span className="block max-h-30 w-[290px] overflow-y-auto text-sm">
+                  <span className="block max-h-100 w-full overflow-y-auto text-sm">
                     {parseFeedback(
                       feedItem.feedback || "No feedback available",
                     )}
@@ -367,7 +367,7 @@ export default function FeedItemPage() {
                       </div>
                     </DialogContent>
                   </Dialog>
-                  <span className="block max-h-30 w-[290px] overflow-y-auto text-sm">
+                  <span className="block max-h-100 w-full overflow-y-auto text-sm">
                     {parseFeedbackBooking(
                       feedItem.feedbackBooking || "No feedback available",
                     )}

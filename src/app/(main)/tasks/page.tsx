@@ -179,22 +179,9 @@ export default function TasksPage() {
             placeholder="Filter by client name..."
             value={clientNameFilter}
             onChange={(e) => setClientNameFilter(e.target.value)}
-            className="w-[220px]"
+            className="w-[360px]"
           />
 
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="show-closed"
-              checked={showClosed}
-              onCheckedChange={(v) => setShowClosed(Boolean(v))}
-            />
-            <label htmlFor="show-closed" className="text-sm">
-              include closed
-            </label>
-          </div>
-        </div>
-
-        <div className="mb-4 flex flex-row items-center justify-between gap-4 px-6">
           <Select
             value={sortOrder}
             onValueChange={(v) => setSortOrder(v as "asc" | "desc")}
@@ -223,7 +210,7 @@ export default function TasksPage() {
           </Select>
 
           <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-auto">
               <SelectValue placeholder="All Priorities" />
             </SelectTrigger>
             <SelectContent>
@@ -233,16 +220,27 @@ export default function TasksPage() {
               <SelectItem value="LOW">Low</SelectItem>
             </SelectContent>
           </Select>
+
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="show-closed"
+              checked={showClosed}
+              onCheckedChange={(v) => setShowClosed(Boolean(v))}
+            />
+            <label htmlFor="show-closed" className="text-sm">
+              include closed
+            </label>
+          </div>
         </div>
 
-        <main className="flex flex-1 flex-col">
+        <section className="mt-4 flex flex-1 flex-col rounded-lg border-1 border-dashed border-gray-300 p-2 shadow-lg">
           {tasks && (
             <TasksCarousel
               tasks={filteredTasks ?? []}
               onTaskStatusUpdated={fetchTasks}
             />
           )}
-        </main>
+        </section>
       </div>
     </main>
   )

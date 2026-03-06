@@ -98,29 +98,28 @@ export default function TaskPage() {
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col px-0 pt-5">
-      <div className="flex justify-between">
-        <div className="flex w-[95%] flex-row items-center justify-between gap-2">
-          <h1 className="ml-6 text-2xl font-semibold">Task</h1>
-          <div className="flex flex-row gap-2">
-            <RouteButton pathParam="/tasks" nameParam="Go to all tasks" />
+      <div className="flex w-full flex-row items-center justify-between gap-2">
+        <h1 className="ml-6 text-2xl font-semibold">Task</h1>
+        <div className="flex flex-row gap-2 pr-8">
+          <RouteButton pathParam="/tasks" nameParam="Go to all tasks" />
 
-            {task.parentTaskId && (
-              <Button
-                variant="default"
-                onClick={() => {
-                  if (task.parentTaskId) {
-                    router.push(`/tasks/${task.parentTaskId}`)
-                  }
-                }}
-              >
-                Go to parent task
-              </Button>
-            )}
-          </div>
+          {task.parentTaskId && (
+            <Button
+              variant="default"
+              onClick={() => {
+                if (task.parentTaskId) {
+                  router.push(`/tasks/${task.parentTaskId}`)
+                }
+              }}
+            >
+              Go to parent task
+            </Button>
+          )}
         </div>
       </div>
+
       <div className="space-y-6">
-        <Card className="mx-auto mt-6 flex w-[90%] max-w-xl flex-col">
+        <Card className="mx-auto mt-6 flex w-[95%] flex-col">
           <CardHeader>
             <CardTitle className="flex items-center justify-between gap-4">
               <div className="flex flex-row items-center justify-start gap-1">
@@ -168,7 +167,7 @@ export default function TaskPage() {
           </CardHeader>
 
           <CardContent>
-            <div className="mb-4 grid max-h-120 grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2 overflow-y-auto">
+            <div className="mb-4 grid max-h-200 grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2 overflow-y-auto">
               <div className="pr-2 text-sm text-gray-500">Task Name:</div>
               <div className="text-lg">{task.theme || "—"}</div>
 
@@ -359,34 +358,34 @@ export default function TaskPage() {
                 </>
               )}
             </div>
-          </CardContent>
 
-          <div className="mx-auto flex w-[80%] flex-row items-center justify-center gap-2">
-            <FormTaskEditDialog
-              task={task}
-              clients={clients}
-              contacts={contacts}
-              onSuccess={handleSuccess}
-            />
-
-            {user?.user.id && (
-              <FormNewTaskDialog
+            <div className="flex w-full flex-row items-center justify-end gap-2">
+              <FormTaskEditDialog
+                task={task}
                 clients={clients}
                 contacts={contacts}
-                userId={user?.user.id}
                 onSuccess={handleSuccess}
-                triggerLabel="Add Linked Task"
-                parentTaskId={task.id}
               />
-            )}
 
-            <FormTaskTransferDialog
-              taskId={task.id}
-              userId={user?.user.id || ""}
-              onSuccess={handleSuccess}
-              triggerLabel="Transfer Task"
-            />
-          </div>
+              {user?.user.id && (
+                <FormNewTaskDialog
+                  clients={clients}
+                  contacts={contacts}
+                  userId={user?.user.id}
+                  onSuccess={handleSuccess}
+                  triggerLabel="Add Linked Task"
+                  parentTaskId={task.id}
+                />
+              )}
+
+              <FormTaskTransferDialog
+                taskId={task.id}
+                userId={user?.user.id || ""}
+                onSuccess={handleSuccess}
+                triggerLabel="Transfer Task"
+              />
+            </div>
+          </CardContent>
         </Card>
       </div>
     </main>

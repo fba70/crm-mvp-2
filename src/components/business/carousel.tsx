@@ -148,7 +148,7 @@ export function TasksCarousel({
   // If tasks list is empty, show the message
   if (tasks.length === 0) {
     return (
-      <div className="flex h-[67vh] w-full items-center justify-center">
+      <div className="flex h-[40vh] w-full items-center justify-center">
         <p className="text-lg text-gray-500">
           The filtered list of tasks is empty
         </p>
@@ -157,7 +157,7 @@ export function TasksCarousel({
   }
 
   return (
-    <div className="relative h-[67vh] w-full overflow-hidden">
+    <div className="relative h-[40vh] w-full overflow-hidden">
       {/* Carousel Container */}
       <div className="relative flex h-full w-full items-center justify-center">
         {currentIndex >= 0 && currentIndex < tasks.length && (
@@ -216,7 +216,7 @@ export function TasksCarousel({
         {tasks[currentIndex] && (
           <Button
             variant="default"
-            className="fixed top-80 right-38 z-30 rounded-lg"
+            className="fixed top-53 right-50 z-30 rounded-lg"
             onClick={() => {
               router.push(`/tasks/${tasks[currentIndex].id}`)
             }}
