@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
+import TaskTransitions from "./transitions"
 
 export default function TasksPage() {
   const { data: user, isPending } = useSession()
@@ -240,6 +241,10 @@ export default function TasksPage() {
               onTaskStatusUpdated={fetchTasks}
             />
           )}
+        </section>
+
+        <section>
+          <TaskTransitions />
         </section>
       </div>
     </main>

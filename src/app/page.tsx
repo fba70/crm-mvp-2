@@ -10,7 +10,7 @@ export default function Home() {
         <div className="mb-8 flex items-center justify-center gap-4">
           <Image
             src="/T_logo.jpg"
-            alt="CRM App Logo"
+            alt="TRUFFALO Logo"
             width={400}
             height={400}
           />

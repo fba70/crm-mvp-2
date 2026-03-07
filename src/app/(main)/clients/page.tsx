@@ -163,10 +163,10 @@ function ClientCards({
   onClientUpdated: () => void
 }) {
   return (
-    <div className="flex flex-col items-center justify-center">
-      <div className="grid h-full w-full grid-cols-1 gap-2 overflow-y-auto sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
+    <div className="mt-6 flex flex-col items-center justify-center">
+      <div className="grid auto-rows-[220px] grid-cols-1 gap-2 overflow-y-auto sm:max-h-[calc(220px*3+8px*2+8px)] sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2">
         {clients.map((client) => (
-          <Card key={client.id} className="w-full pt-4 pb-6">
+          <Card key={client.id} className="w-[550px] pt-4 pb-6">
             <CardContent className="flex flex-col gap-3 px-6 py-0">
               <div className="flex flex-row items-center justify-between gap-2">
                 <div className="text-lg font-semibold">{client.name}</div>
@@ -261,10 +261,10 @@ function ContactCards({
   onContactUpdated: () => void
 }) {
   return (
-    <div className="flex flex-col items-center justify-center">
-      <div className="grid h-full w-full grid-cols-1 gap-2 overflow-y-auto sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
+    <div className="mt-6 flex flex-col items-center justify-center">
+      <div className="grid auto-rows-[140px] grid-cols-1 gap-2 overflow-y-auto sm:max-h-[calc(140px*3+8px*2+8px)] sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2">
         {contacts.map((contact) => (
-          <Card key={contact.id} className="w-full pt-4 pb-6">
+          <Card key={contact.id} className="w-[550px] pt-4 pb-6">
             <CardContent className="flex flex-col gap-3 px-6 py-0">
               <div className="flex flex-row items-center justify-between gap-2">
                 <div className="text-lg font-semibold">{contact.name}</div>

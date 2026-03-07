@@ -4,6 +4,8 @@ import { getServerSession } from "@/lib/get-session"
 import { unauthorized } from "next/navigation"
 import NewsDrawer from "@/components/business/news-drawer"
 import Image from "next/image"
+import { NavMenu } from "@/components/business/nav-menu"
+
 // import { ModeToggle } from "@/components/mode-toggle"
 
 export async function Navbar() {
@@ -29,6 +31,9 @@ export async function Navbar() {
           />
           <span className="text-2xl font-semibold text-white">TRUFFALO.AI</span>
         </Link>
+
+        <NavMenu />
+
         <div className="flex items-center gap-2">
           <NewsDrawer userId={user?.id} />
 
