@@ -11,8 +11,8 @@ const outfit = Outfit({
 })
 
 export const metadata: Metadata = {
-  title: "CRM MVP APP",
-  description: "Tasks management MVP",
+  title: "TRUFFALO.AI",
+  description: "Your agentic CRM App",
 }
 
 export default function RootLayout({

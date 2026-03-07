@@ -88,7 +88,7 @@ export default function FeedPage() {
   if (feedLoading || contactsLoading) return <FeedLoading />
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-col px-0 pt-5">
+    <main className="mx-auto flex max-w-6xl flex-col px-0 pt-5 pb-5">
       <div className="space-y-4">
         <div className="flex flex-row justify-between px-4">
           <h1 className="pl-2 text-2xl font-semibold">Feed</h1>
@@ -210,10 +210,10 @@ function FeedCards({
   // console.log("FEED TO RENDER", feed)
 
   return (
-    <div className="flex flex-col items-center justify-center">
-      <div className="grid h-full w-full grid-cols-1 gap-2 overflow-y-auto sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
+    <div className="mt-6 flex flex-col items-center justify-center">
+      <div className="grid auto-rows-[190px] grid-cols-1 gap-2 overflow-y-auto sm:max-h-[calc(190px*3+8px*2+8px)] sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2">
         {feed.map((feedItem) => (
-          <Card key={feedItem.id} className="py-3">
+          <Card key={feedItem.id} className="w-[550px] py-3">
             <CardContent className="flex flex-col gap-1 px-4 py-0">
               <div className="flex flex-row items-center justify-between gap-2">
                 <div className="flex flex-row items-center justify-center gap-2">
@@ -304,7 +304,7 @@ function FeedCards({
 
               <div className="pb-2">
                 <span className="pr-2 text-sm text-gray-400">Theme:</span>
-                <span className="max-w-[200px] overflow-hidden text-sm">
+                <span className="inline-block max-w-[200px] truncate align-bottom text-sm">
                   {feedItem.metadata}
                 </span>
               </div>
