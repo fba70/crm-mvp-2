@@ -1,7 +1,6 @@
 import { streamText, UIMessage, convertToModelMessages } from "ai"
 import { openai } from "@ai-sdk/openai"
 import { createVertex } from "@ai-sdk/google-vertex"
-import serviceAccount from "@/secret/videoparser-470412-9f69b1624ccc.json"
 
 export const maxDuration = 30
 
@@ -22,9 +21,15 @@ export async function POST(req: Request) {
 
   let result
   if (useGoogle) {
+    const encodedJson = process.env.GCP_SERVICE_ACCOUNT_JSON_BASE64
+    if (!encodedJson) throw new Error("GCP_SERVICE_ACCOUNT_JSON_BASE64 is not set")
+    const credentials = JSON.parse(Buffer.from(encodedJson, "base64").toString())
+
     const vertex = createVertex({
+      project: credentials.project_id,
+      location: process.env.GOOGLE_VERTEX_LOCATION ?? "us-central1",
       googleAuthOptions: {
-        credentials: serviceAccount,
+        credentials,
         scopes: ["https://www.googleapis.com/auth/cloud-platform"],
       },
     })
