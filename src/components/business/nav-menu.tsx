@@ -58,6 +58,19 @@ export function NavMenu() {
           CLIENTS
         </Link>
       </div>
+
+      <div className="flex items-center justify-between py-3">
+        <Link
+          href="/sources"
+          className={
+            pathname.startsWith("/sources")
+              ? "font-bold text-yellow-300"
+              : "font-normal text-white"
+          }
+        >
+          SOURCES
+        </Link>
+      </div>
     </footer>
   )
 }
