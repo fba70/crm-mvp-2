@@ -70,9 +70,26 @@ import {
 } from "@/components/ai-elements/sources"
 import { SpeechInput } from "@/components/ai-elements/speech-input"
 import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion"
-import { CheckIcon, GlobeIcon } from "lucide-react"
-import { useCallback, useMemo, useState } from "react"
+import { Button } from "@/components/ui/button"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import axiosApi from "@/lib/axios"
+import { cn } from "@/lib/utils"
+import { CheckIcon, ChevronDownIcon, GlobeIcon, XIcon } from "lucide-react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
+// import { Badge } from "@/components/ui/badge"
 
 interface MessageType {
   key: string
@@ -138,12 +155,95 @@ const models = [
 ]
 
 const suggestions = [
-  "Find latest trends in media industry",
-  "Find most important media events in DACH region in 2026",
-  "Find biggest deals in media industry in DACH region in 2026",
+  "Find latest trends in the business domain",
+  "Find latest news about the client(s)",
+  "Find most important events in DACH region in 2026",
+  "Find biggest deals in business domain in DACH region in 2026",
 ]
 
 const chefs = ["OpenAI", "Google"]
+
+const BUSINESS_CATEGORIES = [
+  "Media",
+  "Healthcare",
+  "Automotive",
+  "Banking",
+  "Insurance",
+  "IT",
+  "Sport",
+]
+
+interface Client {
+  id: string
+  name: string
+}
+
+const FilterSelector = ({
+  label,
+  items,
+  selected,
+  onToggle,
+  loading = false,
+}: {
+  label: string
+  items: { id: string; name: string }[]
+  selected: string[]
+  onToggle: (id: string) => void
+  loading?: boolean
+}) => {
+  const [open, setOpen] = useState(false)
+
+  const selectedCount = selected.length
+  const triggerLabel =
+    selectedCount === 0
+      ? label
+      : selectedCount === items.length
+        ? `${label}: All`
+        : `${label}: ${selectedCount}`
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant={selectedCount > 0 ? "secondary" : "outline"}
+          size="sm"
+          className="h-7 gap-1.5 text-xs"
+        >
+          {triggerLabel}
+          <ChevronDownIcon className="size-3 opacity-60" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-52 p-0" align="start">
+        <Command>
+          <CommandInput placeholder={`Search ${label.toLowerCase()}…`} />
+          <CommandList>
+            <CommandEmpty>{loading ? "Loading…" : "No results."}</CommandEmpty>
+            <CommandGroup>
+              {items.map((item) => {
+                const isSelected = selected.includes(item.id)
+                return (
+                  <CommandItem
+                    key={item.id}
+                    value={item.name}
+                    onSelect={() => onToggle(item.id)}
+                  >
+                    <CheckIcon
+                      className={cn(
+                        "mr-2 size-3.5",
+                        isSelected ? "opacity-100" : "opacity-0",
+                      )}
+                    />
+                    {item.name}
+                  </CommandItem>
+                )
+              })}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  )
+}
 
 const AttachmentItem = ({
   attachment,
@@ -241,6 +341,18 @@ const ElementsChat = () => {
   const [modelSelectorOpen, setModelSelectorOpen] = useState(false)
   const [text, setText] = useState<string>("")
   const [useWebSearch, setUseWebSearch] = useState<boolean>(false)
+  const [clients, setClients] = useState<Client[]>([])
+  const [clientsLoading, setClientsLoading] = useState(false)
+  const [selectedClients, setSelectedClients] = useState<string[]>([])
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+
+  useEffect(() => {
+    setClientsLoading(true)
+    axiosApi
+      .get("/api/client")
+      .then((res) => setClients(res.data))
+      .finally(() => setClientsLoading(false))
+  }, [])
 
   const {
     messages: rawMessages,
@@ -260,6 +372,40 @@ const ElementsChat = () => {
     [model],
   )
 
+  const categoryItems = useMemo(
+    () => BUSINESS_CATEGORIES.map((c) => ({ id: c, name: c })),
+    [],
+  )
+
+  const buildContextSuffix = useCallback(() => {
+    if (selectedClients.length === 0 && selectedCategories.length === 0)
+      return ""
+    const parts: string[] = []
+    if (selectedClients.length > 0) {
+      const names = clients
+        .filter((c) => selectedClients.includes(c.id))
+        .map((c) => c.name)
+        .join(", ")
+      parts.push(`clients: ${names}`)
+    }
+    if (selectedCategories.length > 0) {
+      parts.push(`categories: ${selectedCategories.join(", ")}`)
+    }
+    return ` Please search for the information only relevant to the ${parts.join(" and ")}.`
+  }, [selectedClients, selectedCategories, clients])
+
+  const toggleClient = useCallback((id: string) => {
+    setSelectedClients((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    )
+  }, [])
+
+  const toggleCategory = useCallback((id: string) => {
+    setSelectedCategories((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    )
+  }, [])
+
   const handleSubmit = useCallback(
     async (message: PromptInputMessage) => {
       const hasText = Boolean(message.text)
@@ -273,8 +419,10 @@ const ElementsChat = () => {
         })
       }
 
+      const suffix = buildContextSuffix()
+      const baseText = message.text || "Sent with attachments"
       await sendMessage(
-        { text: message.text || "Sent with attachments" },
+        { text: baseText + suffix },
         {
           body: {
             model: selectedModelData?.chefSlug ?? "openai",
@@ -284,13 +432,14 @@ const ElementsChat = () => {
       )
       setText("")
     },
-    [sendMessage, selectedModelData, useWebSearch],
+    [sendMessage, selectedModelData, useWebSearch, buildContextSuffix],
   )
 
   const handleSuggestionClick = useCallback(
     async (suggestion: string) => {
+      const suffix = buildContextSuffix()
       await sendMessage(
-        { text: suggestion },
+        { text: suggestion + suffix },
         {
           body: {
             model: selectedModelData?.chefSlug ?? "openai",
@@ -299,7 +448,7 @@ const ElementsChat = () => {
         },
       )
     },
-    [sendMessage, selectedModelData, useWebSearch],
+    [sendMessage, selectedModelData, useWebSearch, buildContextSuffix],
   )
 
   const handleTranscriptionChange = useCallback((transcript: string) => {
@@ -394,6 +543,39 @@ const ElementsChat = () => {
             />
           ))}
         </Suggestions>
+
+        <div className="flex flex-wrap items-center gap-2 px-4">
+          <span className="text-muted-foreground text-xs">
+            Filter search by categories:
+          </span>
+          <FilterSelector
+            label="Clients"
+            items={clients}
+            selected={selectedClients}
+            onToggle={toggleClient}
+            loading={clientsLoading}
+          />
+          <FilterSelector
+            label="Categories"
+            items={categoryItems}
+            selected={selectedCategories}
+            onToggle={toggleCategory}
+          />
+          {(selectedClients.length > 0 || selectedCategories.length > 0) && (
+            <button
+              type="button"
+              className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-xs"
+              onClick={() => {
+                setSelectedClients([])
+                setSelectedCategories([])
+              }}
+            >
+              <XIcon className="size-3" />
+              Clear
+            </button>
+          )}
+        </div>
+
         <div className="w-full px-4 pb-4">
           <PromptInput globalDrop multiple onSubmit={handleSubmit}>
             <PromptInputHeader>

@@ -1,6 +1,7 @@
 import { Chat } from "chat"
 import { createSlackAdapter } from "@chat-adapter/slack"
 import { createMemoryState } from "@chat-adapter/state-memory"
+
 export const bot = new Chat({
   userName: "mybot",
   adapters: {
