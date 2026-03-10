@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
-import { BotIcon, RefreshCwIcon, UserIcon } from "lucide-react"
+import { BotIcon, RefreshCwIcon, UserIcon, ZapIcon, TimerIcon } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
 
 interface SlackMessage {
@@ -13,6 +13,8 @@ interface SlackMessage {
   isMe: boolean
   dateSent: string
 }
+
+type Mode = "polling" | "webhook"
 
 const POLL_INTERVAL_MS = 15_000
 
@@ -46,11 +48,16 @@ const MessageCard = ({ message }: { message: SlackMessage }) => (
 )
 
 const SlackChat = () => {
+  const [mode, setMode] = useState<Mode>("polling")
   const [messages, setMessages] = useState<SlackMessage[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
+  const [sseStatus, setSseStatus] = useState<"connecting" | "connected" | "disconnected">(
+    "disconnected",
+  )
   const bottomRef = useRef<HTMLDivElement>(null)
+  const sseRef = useRef<EventSource | null>(null)
 
   const fetchMessages = useCallback(async (isManual = false) => {
     if (isManual) setRefreshing(true)
@@ -71,34 +78,132 @@ const SlackChat = () => {
     }
   }, [])
 
+  // Polling mode
   useEffect(() => {
+    if (mode !== "polling") return
     fetchMessages()
     const interval = setInterval(() => fetchMessages(), POLL_INTERVAL_MS)
     return () => clearInterval(interval)
-  }, [fetchMessages])
+  }, [mode, fetchMessages])
+
+  // Webhook / SSE mode
+  useEffect(() => {
+    if (mode !== "webhook") return
+
+    setLoading(true)
+    fetchMessages()
+
+    setSseStatus("connecting")
+    const es = new EventSource("/api/slack/stream")
+    sseRef.current = es
+
+    es.onopen = () => setSseStatus("connected")
+
+    es.onmessage = (event) => {
+      if (event.data === "refresh") {
+        fetchMessages()
+      }
+    }
+
+    es.onerror = () => {
+      setSseStatus("disconnected")
+      es.close()
+    }
+
+    return () => {
+      es.close()
+      setSseStatus("disconnected")
+    }
+  }, [mode, fetchMessages])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
+  const handleModeSwitch = (next: Mode) => {
+    if (next === mode) return
+    // Reset state when switching modes
+    setMessages([])
+    setLoading(true)
+    setError(null)
+    setMode(next)
+  }
+
   return (
     <div className="relative mt-4 flex size-full flex-col gap-3">
+      {/* Header row */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="size-2 rounded-full bg-green-500" />
+          <div
+            className={cn(
+              "size-2 rounded-full",
+              mode === "webhook" && sseStatus === "connected" ? "bg-green-500" : "bg-green-500",
+            )}
+          />
           <span className="text-sm font-medium text-muted-foreground">Slack channel</span>
         </div>
-        <button
-          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground disabled:opacity-50"
-          disabled={refreshing}
-          onClick={() => fetchMessages(true)}
-          type="button"
-        >
-          <RefreshCwIcon className={cn("size-3", refreshing && "animate-spin")} />
-          Refresh
-        </button>
+
+        <div className="flex items-center gap-3">
+          {/* Mode toggle */}
+          <div className="flex items-center rounded-md border p-0.5 text-xs">
+            <button
+              type="button"
+              onClick={() => handleModeSwitch("polling")}
+              className={cn(
+                "flex items-center gap-1 rounded px-2 py-1 transition-colors",
+                mode === "polling"
+                  ? "bg-muted text-foreground"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <TimerIcon className="size-3" />
+              Polling
+            </button>
+            <button
+              type="button"
+              onClick={() => handleModeSwitch("webhook")}
+              className={cn(
+                "flex items-center gap-1 rounded px-2 py-1 transition-colors",
+                mode === "webhook"
+                  ? "bg-muted text-foreground"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <ZapIcon className="size-3" />
+              Webhook
+            </button>
+          </div>
+
+          {/* Refresh button */}
+          <button
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground disabled:opacity-50"
+            disabled={refreshing}
+            onClick={() => fetchMessages(true)}
+            type="button"
+          >
+            <RefreshCwIcon className={cn("size-3", refreshing && "animate-spin")} />
+            Refresh
+          </button>
+        </div>
       </div>
 
+      {/* SSE status badge */}
+      {mode === "webhook" && (
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <div
+            className={cn("size-1.5 rounded-full", {
+              "bg-yellow-400 animate-pulse": sseStatus === "connecting",
+              "bg-green-500": sseStatus === "connected",
+              "bg-destructive": sseStatus === "disconnected",
+            })}
+          />
+          {sseStatus === "connecting" && "Connecting to live stream…"}
+          {sseStatus === "connected" && "Live — updates pushed via webhook"}
+          {sseStatus === "disconnected" && "Stream disconnected — use Refresh to reload"}
+        </div>
+      )}
+
+      {/* Messages */}
       <div className="max-h-[400px] min-h-0 flex-1 overflow-y-auto rounded-md border border-dashed p-4 shadow-sm">
         {loading && (
           <div className="flex h-full items-center justify-center text-sm text-muted-foreground">

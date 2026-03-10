@@ -51,3 +51,6 @@ next-env.d.ts
 
 # google secrets
 /src/secret
+
+# TOTO
+todo.md
