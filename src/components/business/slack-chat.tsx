@@ -229,11 +229,13 @@ const SlackChat = () => {
   }
 
   return (
-    <div className="relative mt-4 flex size-full flex-col gap-3 pb-2">
+    <div className="relative mt-4 flex size-full max-h-[700px] flex-col gap-3">
+      {/* Save error */}
+      {saveError && <div className="text-destructive text-xs">{saveError}</div>}
+
       {/* Header row */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="size-2 rounded-full bg-green-500" />
           <span className="text-muted-foreground text-sm font-medium">
             Slack channel
           </span>
@@ -296,9 +298,6 @@ const SlackChat = () => {
         </div>
       </div>
 
-      {/* Save error */}
-      {saveError && <div className="text-destructive text-xs">{saveError}</div>}
-
       {/* SSE status badge (webhook mode only) */}
       {mode === "webhook" && (
         <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
@@ -317,7 +316,7 @@ const SlackChat = () => {
       )}
 
       {/* Messages */}
-      <div className="max-h-[400px] min-h-0 flex-1 overflow-y-auto rounded-md border border-dashed p-4 shadow-sm">
+      <div className="max-h-[650px] min-h-0 flex-1 overflow-y-auto rounded-md border border-dashed p-4 shadow-sm">
         {loading && (
           <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
             Loading messages…

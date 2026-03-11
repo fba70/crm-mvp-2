@@ -31,6 +31,7 @@ model User {
 
   notifications Notification[]
   sources       Source[]
+  rules         Rule[]
 
   @@unique([email])
   @@map("user")
@@ -295,4 +296,18 @@ model Source {
   updatedAt DateTime @updatedAt
 
   @@map("source")
+}
+
+model Rule {
+  id        String   @id @default(uuid())
+  title     String
+  category  String
+  content   String   // markdown text
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("rule")
 }

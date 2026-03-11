@@ -86,7 +86,13 @@ import {
 } from "@/components/ui/popover"
 import axiosApi from "@/lib/axios"
 import { cn } from "@/lib/utils"
-import { CheckIcon, ChevronDownIcon, GlobeIcon, SaveIcon, XIcon } from "lucide-react"
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  GlobeIcon,
+  SaveIcon,
+  XIcon,
+} from "lucide-react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
 // import { Badge } from "@/components/ui/badge"
@@ -155,7 +161,7 @@ const models = [
 ]
 
 const suggestions = [
-  "Find latest trends in the business domain",
+  "Find latest trends in business domain",
   "Find latest news about the client(s)",
   "Find most important events in DACH region in 2026",
   "Find biggest deals in business domain in DACH region in 2026",
@@ -522,7 +528,7 @@ const ElementsChat = () => {
       {saveError && (
         <div className="text-destructive mb-1 text-xs">{saveError}</div>
       )}
-      <div className="max-h-[400px] min-h-0 flex-1 overflow-y-auto rounded-md border border-dashed p-4 shadow-sm">
+      <div className="max-h-[350px] min-h-0 flex-1 overflow-y-auto rounded-md border border-dashed p-2 shadow-sm">
         <Conversation>
           <ConversationContent>
             {messages.map(({ versions, ...message }) => (
@@ -583,7 +589,9 @@ const ElementsChat = () => {
             <button
               type="button"
               className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-xs disabled:opacity-50"
-              disabled={saving || status === "streaming" || status === "submitted"}
+              disabled={
+                saving || status === "streaming" || status === "submitted"
+              }
               onClick={handleSave}
             >
               <SaveIcon className={cn("size-3", saving && "animate-pulse")} />
@@ -591,7 +599,7 @@ const ElementsChat = () => {
             </button>
           </div>
         )}
-        <Suggestions className="px-4">
+        <Suggestions className="px-2 pb-4">
           {suggestions.map((suggestion) => (
             <SuggestionItem
               key={suggestion}
@@ -633,7 +641,7 @@ const ElementsChat = () => {
           )}
         </div>
 
-        <div className="w-full px-4 pb-4">
+        <div className="w-full pb-2">
           <PromptInput globalDrop multiple onSubmit={handleSubmit}>
             <PromptInputHeader>
               <PromptInputAttachmentsDisplay />

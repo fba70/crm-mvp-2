@@ -26,7 +26,7 @@ import axiosApi from "@/lib/axios"
 import { useEffect, useState, useCallback } from "react"
 import { Eye } from "lucide-react"
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 5
 
 interface SourceRecord {
   id: string
@@ -153,7 +153,7 @@ const SourcesAnalysis = () => {
     <div className="relative mt-4 flex size-full flex-col gap-4">
       <div className="flex items-center justify-between">
         <span className="text-muted-foreground text-sm font-medium">
-          Unprocessed sources
+          Unprocessed sources:
         </span>
         {!loading && (
           <span className="text-muted-foreground text-xs">
