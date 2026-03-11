@@ -86,7 +86,7 @@ import {
 } from "@/components/ui/popover"
 import axiosApi from "@/lib/axios"
 import { cn } from "@/lib/utils"
-import { CheckIcon, ChevronDownIcon, GlobeIcon, XIcon } from "lucide-react"
+import { CheckIcon, ChevronDownIcon, GlobeIcon, SaveIcon, XIcon } from "lucide-react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
 // import { Badge } from "@/components/ui/badge"
@@ -354,8 +354,12 @@ const ElementsChat = () => {
       .finally(() => setClientsLoading(false))
   }, [])
 
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+
   const {
     messages: rawMessages,
+    setMessages: setRawMessages,
     sendMessage,
     status,
   } = useChat({
@@ -471,6 +475,43 @@ const ElementsChat = () => {
     setModelSelectorOpen(false)
   }, [])
 
+  const handleSave = useCallback(async () => {
+    if (rawMessages.length === 0) return
+    setSaving(true)
+    setSaveError(null)
+    try {
+      const now = new Date().toISOString()
+      const payload = rawMessages.map((msg) => ({
+        role: msg.role,
+        content: msg.parts
+          .filter((p) => p.type === "text")
+          .map((p) => (p as { type: "text"; text: string }).text)
+          .join(""),
+      }))
+      const res = await fetch("/api/source", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          source: "external_llm",
+          channelId: model,
+          fetchedAt: now,
+          oldestTs: now,
+          newestTs: now,
+          messages: payload,
+        }),
+      })
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error ?? "Failed to save")
+      }
+      setRawMessages([])
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Unknown error")
+    } finally {
+      setSaving(false)
+    }
+  }, [rawMessages, model, setRawMessages])
+
   const isSubmitDisabled = useMemo(
     () => !text.trim() || status === "streaming" || status === "submitted",
     [text, status],
@@ -478,6 +519,9 @@ const ElementsChat = () => {
 
   return (
     <div className="relative mt-4 flex size-full flex-col divide-y overflow-hidden">
+      {saveError && (
+        <div className="text-destructive mb-1 text-xs">{saveError}</div>
+      )}
       <div className="max-h-[400px] min-h-0 flex-1 overflow-y-auto rounded-md border border-dashed p-4 shadow-sm">
         <Conversation>
           <ConversationContent>
@@ -534,6 +578,19 @@ const ElementsChat = () => {
       </div>
 
       <div className="grid shrink-0 gap-4 pt-4">
+        {rawMessages.length > 0 && (
+          <div className="flex justify-end px-4">
+            <button
+              type="button"
+              className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-xs disabled:opacity-50"
+              disabled={saving || status === "streaming" || status === "submitted"}
+              onClick={handleSave}
+            >
+              <SaveIcon className={cn("size-3", saving && "animate-pulse")} />
+              {saving ? "Saving…" : "Save"}
+            </button>
+          </div>
+        )}
         <Suggestions className="px-4">
           {suggestions.map((suggestion) => (
             <SuggestionItem

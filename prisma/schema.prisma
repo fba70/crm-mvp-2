@@ -5,7 +5,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -21,16 +20,17 @@ model User {
   accounts      Account[]
 
   // Back relations
-  createdTasks    Task[]    @relation("CreatedTasks")
-  assignedTasks   Task[]    @relation("AssignedTasks")
-  createdClients  Client[]  @relation("CreatedClients")
-  transferredTasks Task[]   @relation("TransferredTasks")
-  createdContacts Contact[] @relation("CreatedContacts")
-  collaboratedTasks Task[]  @relation("TaskCollaborators")
+  createdTasks      Task[]    @relation("CreatedTasks")
+  assignedTasks     Task[]    @relation("AssignedTasks")
+  createdClients    Client[]  @relation("CreatedClients")
+  transferredTasks  Task[]    @relation("TransferredTasks")
+  createdContacts   Contact[] @relation("CreatedContacts")
+  collaboratedTasks Task[]    @relation("TaskCollaborators")
 
-  likes       Like[]
+  likes Like[]
 
   notifications Notification[]
+  sources       Source[]
 
   @@unique([email])
   @@map("user")
@@ -90,9 +90,9 @@ enum TaskType {
 }
 
 enum TaskPriority {
-  LOW   
-  MEDIUM 
-  HIGH   
+  LOW
+  MEDIUM
+  HIGH
 }
 
 enum TaskStatus {
@@ -108,120 +108,120 @@ enum TransferStatus {
 }
 
 model Task {
-  id              String   @id @default(uuid())
-  type            TaskType
-  priority        TaskPriority
-  status          TaskStatus @default(OPEN)
-  theme           String?
-  date            DateTime?
-  contactPhone    String?
-  contactEmail    String?
-  contactPerson   String?  // obsolete, Contact model is used instead
-  address         String?
-  urlLink         String?
+  id                 String       @id @default(uuid())
+  type               TaskType
+  priority           TaskPriority
+  status             TaskStatus   @default(OPEN)
+  theme              String?
+  date               DateTime?
+  contactPhone       String?
+  contactEmail       String?
+  contactPerson      String? // obsolete, Contact model is used instead
+  address            String?
+  urlLink            String?
   statusChangeReason String?
 
   // Relations
-  clientId        String?
-  client          Client?   @relation(fields: [clientId], references: [id])
+  clientId String?
+  client   Client? @relation(fields: [clientId], references: [id])
 
-  contactId       String?
-  contact         Contact? @relation(fields: [contactId], references: [id])
+  contactId String?
+  contact   Contact? @relation(fields: [contactId], references: [id])
 
-  createdById     String
-  createdBy       User     @relation("CreatedTasks", fields: [createdById], references: [id])
-  assignedToId    String?
-  assignedTo      User?    @relation("AssignedTasks", fields: [assignedToId], references: [id])
+  createdById  String
+  createdBy    User    @relation("CreatedTasks", fields: [createdById], references: [id])
+  assignedToId String?
+  assignedTo   User?   @relation("AssignedTasks", fields: [assignedToId], references: [id])
 
   // Collaborating users
-  collaborators   User[]   @relation("TaskCollaborators")
+  collaborators User[] @relation("TaskCollaborators")
 
   // Linked tasks
-  parentTaskId    String?   
-  parentTask      Task?     @relation("TaskLinks", fields: [parentTaskId], references: [id])
-  linkedTasks     Task[]    @relation("TaskLinks")
+  parentTaskId String?
+  parentTask   Task?   @relation("TaskLinks", fields: [parentTaskId], references: [id])
+  linkedTasks  Task[]  @relation("TaskLinks")
 
-// Task transfer fields
-  transferToId      String?   
-  transferTo        User?     @relation("TransferredTasks", fields: [transferToId], references: [id])
-  transferToReason  String?
-  transferStatus    TransferStatus @default(UNDEFINED)
-  rejectionReason   String?
+  // Task transfer fields
+  transferToId     String?
+  transferTo       User?          @relation("TransferredTasks", fields: [transferToId], references: [id])
+  transferToReason String?
+  transferStatus   TransferStatus @default(UNDEFINED)
+  rejectionReason  String?
 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Back relations
-  feeds          Feed[]
+  feeds Feed[]
 
   @@map("task")
 }
 
 model Client {
-  id              String   @id @default(uuid())
-  name            String
-  email           String?
-  phone           String?
-  address         String?
-  webUrl          String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id        String   @id @default(uuid())
+  name      String
+  email     String?
+  phone     String?
+  address   String?
+  webUrl    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  createdById     String?
-  createdBy       User?    @relation("CreatedClients", fields: [createdById], references: [id])
+  createdById String?
+  createdBy   User?   @relation("CreatedClients", fields: [createdById], references: [id])
 
   // Back relation
-  tasks           Task[]
-  feeds           Feed[]
-  contacts        Contact[]
+  tasks    Task[]
+  feeds    Feed[]
+  contacts Contact[]
 
   @@map("client")
 }
 
 model Contact {
-  id          String   @id @default(uuid())
-  name        String
-  phone       String?
-  email       String?
-  position    String?
+  id       String  @id @default(uuid())
+  name     String
+  phone    String?
+  email    String?
+  position String?
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  clientId    String?  // Optional reference to Client
-  client      Client?  @relation(fields: [clientId], references: [id])
+  clientId String? // Optional reference to Client
+  client   Client? @relation(fields: [clientId], references: [id])
 
-// Back relations
-  tasks       Task[]
+  // Back relations
+  tasks Task[]
 
-  createdById     String?
-  createdBy       User?    @relation("CreatedContacts", fields: [createdById], references: [id])
+  createdById String?
+  createdBy   User?   @relation("CreatedContacts", fields: [createdById], references: [id])
 
   // @@map("contact") - update in production to change table name
 }
 
 model Feed {
-  id            String       @id @default(uuid())
-  type          FeedType
-  status        FeedStatus   @default(NEW)
-  actionCall    Boolean?     @default(false)
-  actionEmail   Boolean?     @default(false)
-  actionBooking Boolean?     @default(false)
-  actionTask    Boolean?     @default(false)
-  metadata      String?
-  feedback      String?
+  id              String     @id @default(uuid())
+  type            FeedType
+  status          FeedStatus @default(NEW)
+  actionCall      Boolean?   @default(false)
+  actionEmail     Boolean?   @default(false)
+  actionBooking   Boolean?   @default(false)
+  actionTask      Boolean?   @default(false)
+  metadata        String?
+  feedback        String?
   feedbackBooking String?
 
   // Relations
-  clientId      String?
-  client        Client?      @relation(fields: [clientId], references: [id])
-  taskId        String?
-  task          Task?        @relation(fields: [taskId], references: [id])
+  clientId String?
+  client   Client? @relation(fields: [clientId], references: [id])
+  taskId   String?
+  task     Task?   @relation(fields: [taskId], references: [id])
 
-  likes         Like[]
+  likes Like[]
 
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("feed")
 }
@@ -248,8 +248,8 @@ model Like {
   createdAt DateTime @default(now())
 
   // Relations
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  feed      Feed?    @relation(fields: [feedId], references: [id], onDelete: Cascade)
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  feed Feed? @relation(fields: [feedId], references: [id], onDelete: Cascade)
 
   @@unique([userId, feedId]) // Ensure a user can like a feed item only once
   @@map("like")
@@ -264,16 +264,35 @@ enum NotificationType {
 }
 
 model Notification {
-  id          String   @id @default(uuid())
+  id          String           @id @default(uuid())
   recipientId String?
   senderId    String?
-  sender      User?    @relation(fields: [senderId], references: [id])
+  sender      User?            @relation(fields: [senderId], references: [id])
   message     String?
   type        NotificationType @default(GENERAL)
-  read        Boolean  @default(false)
+  read        Boolean          @default(false)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("notification")
+}
+
+model Source {
+  id        String   @id @default(uuid())
+  source    String                   // e.g. "slack", future: "email", "web"
+  channelId String                   // source-specific channel / inbox ID
+  fetchedAt DateTime                 // when this session was fetched
+  oldestTs  String?                  // Slack ts of oldest message in batch
+  newestTs  String?                  // Slack ts of newest message in batch
+  messages  Json     @db.JsonB       // [{ authorName, ts, text }]
+  processed Boolean  @default(false) // flipped by AI processing pipeline
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("source")
 }

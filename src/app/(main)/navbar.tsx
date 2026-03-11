@@ -43,5 +43,3 @@ export async function Navbar() {
     </header>
   )
 }
-
-// <ModeToggle />
