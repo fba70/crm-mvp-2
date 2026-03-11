@@ -70,7 +70,7 @@ export default function FeedItemPage() {
     fetchContacts()
   }, [])
 
-  console.log("Contacts:", contacts)
+  // console.log("Contacts:", contacts)
 
   useEffect(() => {
     const fetchFeedItem = async () => {
