@@ -8,6 +8,7 @@ import BudgetCharts from "@/components/business/budget-charts"
 import { getServerSession } from "@/lib/get-session"
 import { unauthorized } from "next/navigation"
 import type { Task } from "@/types/entities"
+import type { Feed } from "@/generated/prisma"
 import prisma from "@/lib/prisma"
 
 export const metadata: Metadata = {
@@ -73,16 +74,16 @@ export default async function DashboardPage() {
   // Calculate feed summary metrics
   const totalNumberOfFeeds = feeds.length
   const numberOfRecommendationFeeds = feeds.filter(
-    (feed) => feed.type === "RECOMMENDATION",
+    (feed: Feed) => feed.type === "RECOMMENDATION",
   ).length
   const numberOfClientActivityFeeds = feeds.filter(
-    (feed) => feed.type === "CLIENT_ACTIVITY",
+    (feed: Feed) => feed.type === "CLIENT_ACTIVITY",
   ).length
   const numberOfIndustryInfoFeeds = feeds.filter(
-    (feed) => feed.type === "INDUSTRY_INFO",
+    (feed: Feed) => feed.type === "INDUSTRY_INFO",
   ).length
   const numberOfColleaguesUpdatesFeeds = feeds.filter(
-    (feed) => feed.type === "COLLEAGUES_UPDATE",
+    (feed: Feed) => feed.type === "COLLEAGUES_UPDATE",
   ).length
 
   return (
