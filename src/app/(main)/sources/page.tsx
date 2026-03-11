@@ -3,6 +3,7 @@ import { getServerSession } from "@/lib/get-session"
 import { unauthorized } from "next/navigation"
 import ElementsChat from "@/components/business/elements-chat"
 import SlackChat from "@/components/business/slack-chat"
+import SourcesAnalysis from "@/components/business/sources-analysis"
 
 export const metadata: Metadata = {
   title: "Sources",
@@ -31,6 +32,11 @@ export default async function SourcesPage() {
         <div className="mt-8">
           <h2 className="text-xl font-semibold">Slack chat</h2>
           <SlackChat />
+        </div>
+
+        <div className="mt-8">
+          <h2 className="text-xl font-semibold">Sources analysis</h2>
+          <SourcesAnalysis />
         </div>
       </div>
     </main>

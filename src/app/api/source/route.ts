@@ -2,14 +2,23 @@ import { NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { getServerSession } from "@/lib/get-session"
 
-export async function GET() {
+export async function GET(req: Request) {
   const session = await getServerSession()
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
+  const { searchParams } = new URL(req.url)
+  const processedParam = searchParams.get("processed")
+
+  const where: { userId: string; processed?: boolean } = {
+    userId: session.user.id,
+  }
+  if (processedParam === "false") where.processed = false
+  else if (processedParam === "true") where.processed = true
+
   const sources = await prisma.source.findMany({
-    where: { userId: session.user.id },
+    where,
     orderBy: { createdAt: "desc" },
   })
 

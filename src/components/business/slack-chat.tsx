@@ -229,7 +229,7 @@ const SlackChat = () => {
   }
 
   return (
-    <div className="relative mt-4 flex size-full flex-col gap-3">
+    <div className="relative mt-4 flex size-full flex-col gap-3 pb-2">
       {/* Header row */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -297,9 +297,7 @@ const SlackChat = () => {
       </div>
 
       {/* Save error */}
-      {saveError && (
-        <div className="text-destructive text-xs">{saveError}</div>
-      )}
+      {saveError && <div className="text-destructive text-xs">{saveError}</div>}
 
       {/* SSE status badge (webhook mode only) */}
       {mode === "webhook" && (
