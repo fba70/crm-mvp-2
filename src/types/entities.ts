@@ -1,4 +1,4 @@
-import { User } from "@/generated/prisma/wasm"
+import { User } from "@/generated/prisma"
 
 export type Task = {
   id: string

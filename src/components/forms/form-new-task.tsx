@@ -27,7 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import type { Task, Client, Contact } from "@/types/entities"
-import { User } from "@/generated/prisma/wasm"
+import { User } from "@/generated/prisma"
 import axiosApi from "@/lib/axios"
 import { toast } from "sonner"
 import { DialogDescription } from "@radix-ui/react-dialog"
