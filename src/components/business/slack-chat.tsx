@@ -24,7 +24,7 @@ interface SlackMessage {
 
 type Mode = "polling" | "webhook"
 
-const POLL_INTERVAL_MS = 15_000
+const POLL_INTERVAL_MS = 60_000
 const LATEST_TS_KEY = "slack_chat_latest_ts"
 
 const formatTime = (iso: string) =>

@@ -25,6 +25,32 @@ export async function GET(req: Request) {
   return NextResponse.json(sources)
 }
 
+export async function PATCH(req: Request) {
+  const session = await getServerSession()
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  try {
+    const { sourceIds, processed }: { sourceIds: string[]; processed: boolean } =
+      await req.json()
+
+    if (!Array.isArray(sourceIds) || sourceIds.length === 0) {
+      return NextResponse.json({ error: "sourceIds is required" }, { status: 400 })
+    }
+
+    await prisma.source.updateMany({
+      where: { id: { in: sourceIds }, userId: session.user.id },
+      data: { processed },
+    })
+
+    return NextResponse.json({ updated: sourceIds.length })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
+}
+
 export async function POST(req: Request) {
   const session = await getServerSession()
   if (!session?.user?.id) {

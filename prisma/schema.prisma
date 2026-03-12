@@ -32,6 +32,7 @@ model User {
   notifications Notification[]
   sources       Source[]
   rules         Rule[]
+  truffleCards  TruffleCard[]
 
   @@unique([email])
   @@map("user")
@@ -172,9 +173,10 @@ model Client {
   createdBy   User?   @relation("CreatedClients", fields: [createdById], references: [id])
 
   // Back relation
-  tasks    Task[]
-  feeds    Feed[]
-  contacts Contact[]
+  tasks        Task[]
+  feeds        Feed[]
+  contacts     Contact[]
+  truffleCards TruffleCard[]
 
   @@map("client")
 }
@@ -292,6 +294,8 @@ model Source {
   userId String
   user   User   @relation(fields: [userId], references: [id])
 
+  truffleCards TruffleCard[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -310,4 +314,36 @@ model Rule {
   updatedAt DateTime @updatedAt
 
   @@map("rule")
+}
+
+enum TruffleCardPriority {
+  HIGH
+  NORMAL
+}
+
+enum TruffleCardStatus {
+  OPEN
+  CLOSED
+}
+
+model TruffleCard {
+  id              String              @id @default(uuid())
+  status          TruffleCardStatus   @default(OPEN)
+  priority        TruffleCardPriority
+  category        FeedType
+  message         Json                @db.JsonB
+  accepted        Boolean             @default(false)
+  rejectionReason String?
+
+  // Relations
+  clients Client[]
+  sources Source[]
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("truffle_card")
 }

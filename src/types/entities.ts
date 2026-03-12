@@ -142,3 +142,35 @@ export type Notification = {
   createdAt: Date
   updatedAt: Date
 }
+
+export type SourceMessage = {
+  authorName: string
+  ts: string
+  text: string
+}
+
+export type Source = {
+  id: string
+  source: string
+  channelId: string
+  fetchedAt: Date
+  oldestTs?: string | null
+  newestTs?: string | null
+  messages: SourceMessage[]
+  processed: boolean
+  userId: string
+  user?: User
+  createdAt: Date
+  updatedAt: Date
+}
+
+export type Rule = {
+  id: string
+  title: string
+  category: string
+  content: string
+  userId: string
+  user?: User
+  createdAt: Date
+  updatedAt: Date
+}

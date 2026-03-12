@@ -24,7 +24,7 @@ import {
 import { Button } from "@/components/ui/button"
 import axiosApi from "@/lib/axios"
 import { useEffect, useState, useCallback } from "react"
-import { Eye } from "lucide-react"
+import { Eye, RefreshCw } from "lucide-react"
 
 const PAGE_SIZE = 5
 
@@ -153,13 +153,24 @@ const SourcesAnalysis = () => {
     <div className="relative mt-4 flex size-full flex-col gap-4">
       <div className="flex items-center justify-between">
         <span className="text-muted-foreground text-sm font-medium">
-          Unprocessed sources:
+          Unprocessed sources (
+          {!loading && (
+            <span className="text-muted-foreground px-1 text-xs">
+              {sources.length} record{sources.length !== 1 ? "s" : ""}
+            </span>
+          )}
+          ):
         </span>
-        {!loading && (
-          <span className="text-muted-foreground text-xs">
-            {sources.length} record{sources.length !== 1 ? "s" : ""}
-          </span>
-        )}
+
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 text-xs"
+          onClick={fetchSources}
+          disabled={loading}
+        >
+          <RefreshCw className={loading ? "animate-spin" : "text-gray-500"} />
+        </Button>
       </div>
 
       {error && <div className="text-destructive text-xs">{error}</div>}
