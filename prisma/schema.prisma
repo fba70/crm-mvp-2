@@ -223,6 +223,9 @@ model Feed {
 
   likes Like[]
 
+  // Back relation
+  truffleCard TruffleCard?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -338,6 +341,9 @@ model TruffleCard {
   // Relations
   clients Client[]
   sources Source[]
+
+  feedId String? @unique
+  feed   Feed?   @relation(fields: [feedId], references: [id])
 
   userId String
   user   User   @relation(fields: [userId], references: [id])

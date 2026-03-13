@@ -30,11 +30,13 @@ export async function PATCH(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
+    let createdFeedId: string | undefined
+
     if (body.accepted === true) {
       const feedType = existing.category as FeedType
       const clientId = existing.clients[0]?.id ?? null
 
-      await prisma.feed.create({
+      const feed = await prisma.feed.create({
         data: {
           type: feedType,
           status: FeedStatus.NEW,
@@ -46,12 +48,13 @@ export async function PATCH(
           ...(clientId && { clientId }),
         },
       })
+      createdFeedId = feed.id
     }
 
     const card = await prisma.truffleCard.update({
       where: { id },
       data: {
-        ...(body.accepted === true && { accepted: true }),
+        ...(body.accepted === true && { accepted: true, feedId: createdFeedId }),
         ...(body.rejectionReason && { rejectionReason: body.rejectionReason }),
         status: TruffleCardStatus.CLOSED,
       },
