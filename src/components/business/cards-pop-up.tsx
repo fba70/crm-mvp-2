@@ -127,10 +127,14 @@ const models = [
 ]
 
 const CATEGORY_STYLES: Record<string, string> = {
-  RECOMMENDATION: "bg-blue-100 text-blue-800",
-  CLIENT_ACTIVITY: "bg-green-100 text-green-800",
-  INDUSTRY_INFO: "bg-yellow-100 text-yellow-800",
-  COLLEAGUES_UPDATE: "bg-purple-100 text-purple-800",
+  RECOMMENDATION:
+    "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300",
+  CLIENT_ACTIVITY:
+    "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300",
+  INDUSTRY_INFO:
+    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300",
+  COLLEAGUES_UPDATE:
+    "bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300",
 }
 
 // ─── Prompt builders ──────────────────────────────────────────────────────────
@@ -453,8 +457,8 @@ const AnalysisResultCard = ({
       className={cn(
         "flex w-[340px] shrink-0 flex-col overflow-hidden border",
         isHigh
-          ? "bg-gradient-to-br from-yellow-50 to-pink-100"
-          : "bg-gradient-to-br from-slate-100 to-pink-100",
+          ? "bg-gradient-to-br from-yellow-50 to-pink-100 dark:from-yellow-700 dark:to-slate-900"
+          : "bg-gradient-to-br from-slate-100 to-pink-100 dark:from-slate-500 dark:to-slate-900",
       )}
       style={{ height: "420px" }}
     >
@@ -479,7 +483,8 @@ const AnalysisResultCard = ({
           <span
             className={cn(
               "rounded-full px-2 py-0.5 text-xs font-medium",
-              CATEGORY_STYLES[card.category] ?? "bg-muted text-muted-foreground",
+              CATEGORY_STYLES[card.category] ??
+                "bg-muted text-muted-foreground",
             )}
           >
             {card.category}

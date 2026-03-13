@@ -36,6 +36,7 @@ interface Rule {
   content: string
   createdAt: string
   updatedAt: string
+  user: { name: string | null }
 }
 
 type FormState = { title: string; category: string; content: string }
@@ -102,7 +103,7 @@ const RuleModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[80vh] w-[90vw] max-w-5xl flex-col overflow-hidden sm:max-w-5xl">
+      <DialogContent className="flex max-h-[80vh] w-[95vw] max-w-5xl flex-col overflow-hidden sm:max-w-5xl">
         <DialogHeader>
           <DialogTitle>{isNew ? "New rule" : "Edit rule"}</DialogTitle>
         </DialogHeader>
@@ -182,20 +183,20 @@ const ViewModal = ({
   if (!rule) return null
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[80vh] max-w-2xl overflow-y-auto">
+      <DialogContent className="max-h-[80vh] w-[90vw] max-w-5xl overflow-y-auto sm:max-w-5xl">
         <DialogHeader>
-          <DialogTitle>{rule.title}</DialogTitle>
+          <div className="flex items-center justify-between gap-4 pr-6">
+            <DialogTitle>{rule.title}</DialogTitle>
+            <Button size="sm" onClick={onEdit} className="shrink-0">
+              Edit
+            </Button>
+          </div>
         </DialogHeader>
         <p className="text-muted-foreground text-xs">
           Category: <span className="font-medium">{rule.category}</span>
         </p>
         <div className="mt-2" data-color-mode="light">
           <MDPreview source={rule.content} />
-        </div>
-        <div className="mt-4 flex justify-end">
-          <Button size="sm" onClick={onEdit}>
-            Edit
-          </Button>
         </div>
       </DialogContent>
     </Dialog>
@@ -283,6 +284,7 @@ const RulesEditor = () => {
               <TableHead>Title</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Content preview</TableHead>
+              <TableHead>Created by</TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -299,6 +301,9 @@ const RulesEditor = () => {
                   {rule.content.length > 80
                     ? `${rule.content.slice(0, 80)}…`
                     : rule.content}
+                </TableCell>
+                <TableCell className="text-muted-foreground text-xs">
+                  {rule.user.name ?? "—"}
                 </TableCell>
                 <TableCell className="text-right">
                   <Button

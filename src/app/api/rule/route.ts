@@ -9,8 +9,8 @@ export async function GET() {
   }
 
   const rules = await prisma.rule.findMany({
-    where: { userId: session.user.id },
     orderBy: { createdAt: "desc" },
+    include: { user: { select: { name: true } } },
   })
 
   return NextResponse.json(rules)

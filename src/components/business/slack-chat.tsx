@@ -125,7 +125,13 @@ const SlackChat = () => {
 
         if (append) {
           if (data.messages.length > 0) {
-            setMessages((prev) => [...prev, ...data.messages])
+            setMessages((prev) => {
+              const existingIds = new Set(prev.map((m) => m.messageId))
+              const fresh = data.messages.filter(
+                (m) => !existingIds.has(m.messageId),
+              )
+              return fresh.length > 0 ? [...prev, ...fresh] : prev
+            })
           }
         } else {
           setMessages(data.messages)
@@ -190,7 +196,8 @@ const SlackChat = () => {
     setMessages([])
     setLoading(true)
     setError(null)
-    latestTsRef.current = null
+    // Keep latestTsRef cursor so the new mode fetches only messages newer than
+    // what was already saved — prevents re-fetching processed messages.
     setMode(next)
   }
 
