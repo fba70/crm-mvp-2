@@ -216,7 +216,7 @@ export function TasksCarousel({
         {tasks[currentIndex] && (
           <Button
             variant="default"
-            className="fixed top-53 right-50 z-30 rounded-lg"
+            className="fixed top-68 right-50 z-30 rounded-lg"
             onClick={() => {
               router.push(`/tasks/${tasks[currentIndex].id}`)
             }}

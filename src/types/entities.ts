@@ -1,10 +1,18 @@
 import { User } from "@/generated/prisma"
 
+export type Funnel =
+  | "Awareness"
+  | "Interest"
+  | "Decision"
+  | "Action"
+  | "Retention"
+
 export type Task = {
   id: string
   type: "CALL" | "MEET" | "EMAIL" | "OFFER" | "PRESENTATION"
   priority: "LOW" | "MEDIUM" | "HIGH"
   status: "OPEN" | "CLOSED" | "DELETED"
+  funnel: Funnel
   theme?: string | null
   date?: string | Date | null
   contactPhone?: string | null

@@ -148,6 +148,9 @@ export default function TaskPage() {
                 >
                   {task.priority}
                 </Badge>
+                <Badge variant="outline" className="border-violet-400 text-violet-600">
+                  {task.funnel}
+                </Badge>
                 {task.transferToId && (
                   <Badge
                     variant="outline"
@@ -175,6 +178,9 @@ export default function TaskPage() {
               <div className="text-lg">
                 {task.date ? format(new Date(task.date), "dd.MM.yyyy") : "—"}
               </div>
+
+              <div className="pr-2 text-sm text-gray-500">Funnel:</div>
+              <div className="text-lg">{task.funnel}</div>
 
               {task.client && (
                 <>

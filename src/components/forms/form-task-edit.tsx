@@ -37,6 +37,7 @@ type TaskEditFormFields = {
   type: "CALL" | "MEET" | "EMAIL" | "OFFER" | "PRESENTATION"
   priority: "LOW" | "MEDIUM" | "HIGH"
   status: "OPEN" | "CLOSED" | "DELETED"
+  funnel: "Awareness" | "Interest" | "Decision" | "Action" | "Retention"
   date: string
   contactPhone?: string
   contactEmail?: string
@@ -67,6 +68,7 @@ export default function FormTaskEditDialog({
       status: task.status,
       type: task.type,
       priority: task.priority,
+      funnel: task.funnel,
       theme: task.theme || undefined,
       date: task.date
         ? typeof task.date === "string"
@@ -323,6 +325,31 @@ export default function FormTaskEditDialog({
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="funnel"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-gray-500">Funnel</FormLabel>
+                  <FormControl>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Funnel stage" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Awareness">Awareness</SelectItem>
+                        <SelectItem value="Interest">Interest</SelectItem>
+                        <SelectItem value="Decision">Decision</SelectItem>
+                        <SelectItem value="Action">Action</SelectItem>
+                        <SelectItem value="Retention">Retention</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}

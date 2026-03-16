@@ -109,6 +109,14 @@ enum TransferStatus {
   UNDEFINED
 }
 
+enum Funnel {
+  Awareness
+  Interest
+  Decision
+  Action
+  Retention
+}
+
 model Task {
   id                 String       @id @default(uuid())
   type               TaskType
@@ -149,6 +157,8 @@ model Task {
   transferToReason String?
   transferStatus   TransferStatus @default(UNDEFINED)
   rejectionReason  String?
+
+  funnel Funnel @default(Awareness)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

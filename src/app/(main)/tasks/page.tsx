@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useSession } from "@/lib/auth-client"
 import { unauthorized } from "next/navigation"
 import { TasksCarousel } from "@/components/business/carousel"
+import { Kanban } from "@/components/business/kanban"
 import type { Task, Client, Contact } from "@/types/entities"
 import FormNewTaskDialog from "@/components/forms/form-new-task"
 import axiosApi from "@/lib/axios"
@@ -18,6 +19,7 @@ import {
 } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import TaskTransitions from "./transitions"
 
 export default function TasksPage() {
@@ -59,6 +61,11 @@ export default function TasksPage() {
     typeof window !== "undefined"
       ? sessionStorage.getItem("showClosed") === "true"
       : false,
+  )
+  const [activeTab, setActiveTab] = useState<string>(() =>
+    typeof window !== "undefined"
+      ? sessionStorage.getItem("tasksActiveTab") || "carousel"
+      : "carousel",
   )
 
   const fetchTasks = () => {
@@ -121,7 +128,8 @@ export default function TasksPage() {
     if (currentShowClosed !== showClosed.toString()) {
       sessionStorage.setItem("showClosed", showClosed.toString())
     }
-  }, [typeFilter, clientNameFilter, sortOrder, priorityFilter, showClosed])
+    sessionStorage.setItem("tasksActiveTab", activeTab)
+  }, [typeFilter, clientNameFilter, sortOrder, priorityFilter, showClosed, activeTab])
 
   // Reset filters to default values
   const resetFilters = () => {
@@ -130,7 +138,7 @@ export default function TasksPage() {
     setSortOrder("desc")
     setPriorityFilter("ALL")
     setShowClosed(false)
-    sessionStorage.clear() // Clear all saved filters
+    sessionStorage.clear()
   }
 
   const filteredTasks = tasks
@@ -234,14 +242,34 @@ export default function TasksPage() {
           </div>
         </div>
 
-        <section className="mt-4 flex flex-1 flex-col rounded-lg border-1 border-dashed border-gray-300 p-2 shadow-lg">
-          {tasks && (
-            <TasksCarousel
-              tasks={filteredTasks ?? []}
-              onTaskStatusUpdated={fetchTasks}
-            />
-          )}
-        </section>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mx-6 mb-2">
+            <TabsTrigger value="carousel">Carousel</TabsTrigger>
+            <TabsTrigger value="kanban">Kanban</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="carousel">
+            <section className="mt-4 flex flex-1 flex-col rounded-lg border-1 border-dashed border-gray-300 p-2 shadow-lg">
+              {tasks && (
+                <TasksCarousel
+                  tasks={filteredTasks ?? []}
+                  onTaskStatusUpdated={fetchTasks}
+                />
+              )}
+            </section>
+          </TabsContent>
+
+          <TabsContent value="kanban">
+            <section className="mt-4 min-h-[400px] px-2">
+              {tasks && (
+                <Kanban
+                  tasks={filteredTasks ?? []}
+                  onTaskUpdated={fetchTasks}
+                />
+              )}
+            </section>
+          </TabsContent>
+        </Tabs>
 
         <section>
           <TaskTransitions />
