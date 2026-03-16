@@ -6,6 +6,7 @@ import SlackChat from "@/components/business/slack-chat"
 import SourcesAnalysis from "@/components/business/sources-analysis"
 import RulesEditor from "@/components/business/rules-editor"
 import CardsPopUp from "@/components/business/cards-pop-up"
+import NylasEmails from "@/components/business/nylas-emails"
 import { Separator } from "@/components/ui/separator"
 
 export const metadata: Metadata = {
@@ -37,6 +38,13 @@ export default async function SourcesPage() {
             <h2 className="text-xl font-semibold">2. Slack chat</h2>
             <SlackChat />
           </div>
+        </div>
+
+        <Separator className="mt-4 pt-1" />
+
+        <div className="mt-6">
+          <h2 className="text-xl font-semibold">Emails</h2>
+          <NylasEmails />
         </div>
 
         <Separator className="mt-4 pt-1" />
