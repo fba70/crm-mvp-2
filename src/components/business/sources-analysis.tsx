@@ -24,7 +24,8 @@ import {
 import { Button } from "@/components/ui/button"
 import axiosApi from "@/lib/axios"
 import { useEffect, useState, useCallback } from "react"
-import { Eye, RefreshCw } from "lucide-react"
+import { Eye, RefreshCw, Trash2 } from "lucide-react"
+import { toast } from "sonner"
 
 const PAGE_SIZE = 5
 
@@ -122,6 +123,7 @@ const SourcesAnalysis = () => {
     null,
   )
   const [modalOpen, setModalOpen] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const fetchSources = useCallback(() => {
     setLoading(true)
@@ -144,6 +146,19 @@ const SourcesAnalysis = () => {
   const openModal = useCallback((record: SourceRecord) => {
     setSelectedRecord(record)
     setModalOpen(true)
+  }, [])
+
+  const handleDelete = useCallback(async (id: string) => {
+    setDeletingId(id)
+    try {
+      await axiosApi.delete("/api/source", { data: { id } })
+      setSources((prev) => prev.filter((s) => s.id !== id))
+      toast.success("Source deleted")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete")
+    } finally {
+      setDeletingId(null)
+    }
   }, [])
 
   const totalPages = Math.max(1, Math.ceil(sources.length / PAGE_SIZE))
@@ -203,14 +218,25 @@ const SourcesAnalysis = () => {
                     {summarizeMessages(row.messages)}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 text-xs"
-                      onClick={() => openModal(row)}
-                    >
-                      <Eye />
-                    </Button>
+                    <div className="flex items-center justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs"
+                        onClick={() => openModal(row)}
+                      >
+                        <Eye />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:text-destructive h-7 text-xs"
+                        disabled={deletingId === row.id}
+                        onClick={() => handleDelete(row.id)}
+                      >
+                        <Trash2 />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

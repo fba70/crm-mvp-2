@@ -20,7 +20,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import axiosApi from "@/lib/axios"
 import { useEffect, useState, useCallback } from "react"
-import { Eye, Plus } from "lucide-react"
+import { Eye, Plus, Trash2 } from "lucide-react"
+import { toast } from "sonner"
 import "@uiw/react-md-editor/markdown-editor.css"
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false })
@@ -214,6 +215,7 @@ const RulesEditor = () => {
   const [viewOpen, setViewOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
   const [newOpen, setNewOpen] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const fetchRules = useCallback(() => {
     setLoading(true)
@@ -253,6 +255,19 @@ const RulesEditor = () => {
   const openEditFromView = useCallback(() => {
     setViewOpen(false)
     setEditOpen(true)
+  }, [])
+
+  const handleDelete = useCallback(async (id: string) => {
+    setDeletingId(id)
+    try {
+      await axiosApi.delete(`/api/rule/${id}`)
+      setRules((prev) => prev.filter((r) => r.id !== id))
+      toast.success("Rule deleted")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete")
+    } finally {
+      setDeletingId(null)
+    }
   }, [])
 
   return (
@@ -306,14 +321,25 @@ const RulesEditor = () => {
                   {rule.user.name ?? "—"}
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 text-xs"
-                    onClick={() => openView(rule)}
-                  >
-                    <Eye />
-                  </Button>
+                  <div className="flex items-center justify-end gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={() => openView(rule)}
+                    >
+                      <Eye />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive h-7 text-xs"
+                      disabled={deletingId === rule.id}
+                      onClick={() => handleDelete(rule.id)}
+                    >
+                      <Trash2 />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

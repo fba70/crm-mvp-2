@@ -51,6 +51,29 @@ export async function PATCH(req: Request) {
   }
 }
 
+export async function DELETE(req: Request) {
+  const session = await getServerSession()
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  try {
+    const { id }: { id: string } = await req.json()
+    if (!id) {
+      return NextResponse.json({ error: "id is required" }, { status: 400 })
+    }
+
+    await prisma.source.delete({
+      where: { id, userId: session.user.id },
+    })
+
+    return NextResponse.json({ deleted: id })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
+}
+
 export async function POST(req: Request) {
   const session = await getServerSession()
   if (!session?.user?.id) {

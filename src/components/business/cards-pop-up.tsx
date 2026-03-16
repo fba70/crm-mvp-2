@@ -33,7 +33,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import axiosApi from "@/lib/axios"
 import { cn } from "@/lib/utils"
-import { CheckIcon, ChevronDownIcon, PlayIcon } from "lucide-react"
+import { CheckIcon, ChevronDownIcon, PlayIcon, Share2Icon } from "lucide-react"
 import { useState, useEffect, useCallback, useMemo } from "react"
 import Image from "next/image"
 import { toast } from "sonner"
@@ -444,10 +444,12 @@ const AnalysisResultCard = ({
   card,
   onAccept,
   onReject,
+  onShare,
 }: {
   card: TruffleCardRecord
   onAccept: (id: string) => void
   onReject: (id: string) => void
+  onShare: (card: TruffleCardRecord) => void
 }) => {
   const isHigh = card.priority === "HIGH"
   const clientName = card.clients[0]?.name ?? null
@@ -529,6 +531,15 @@ const AnalysisResultCard = ({
           onClick={() => onAccept(card.id)}
         >
           ACCEPT
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-8 w-8 shrink-0 p-0"
+          onClick={() => onShare(card)}
+          title="Share to Slack"
+        >
+          <Share2Icon className="size-3.5" />
         </Button>
       </CardFooter>
     </Card>
@@ -686,6 +697,15 @@ const CardsPopUp = () => {
     setRejectDialogOpen(true)
   }, [])
 
+  const handleShare = useCallback(async (card: TruffleCardRecord) => {
+    try {
+      await axiosApi.post("/api/slack/notify", card)
+      toast.success("Shared to Slack")
+    } catch {
+      toast.error("Failed to share to Slack")
+    }
+  }, [])
+
   const handleRejectConfirm = useCallback(
     async (reason: RejectionReason) => {
       if (!rejectTargetId) return
@@ -758,6 +778,7 @@ const CardsPopUp = () => {
               card={card}
               onAccept={handleAccept}
               onReject={handleReject}
+              onShare={handleShare}
             />
           ))}
         </div>

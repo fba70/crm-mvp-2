@@ -40,28 +40,26 @@ export default async function SourcesPage() {
           </div>
         </div>
 
-        <Separator className="mt-4 pt-1" />
-
         <div className="mt-6">
-          <h2 className="text-xl font-semibold">Emails</h2>
+          <h2 className="text-xl font-semibold">3. Emails</h2>
           <NylasEmails />
         </div>
 
-        <Separator className="mt-4 pt-1" />
+        <Separator className="mt-4 bg-gradient-to-r from-blue-200 to-fuchsia-200 pt-1" />
 
         <div className="mt-6">
           <h2 className="text-xl font-semibold">Sources analysis</h2>
           <SourcesAnalysis />
         </div>
 
-        <Separator className="mt-4 pt-1" />
+        <Separator className="mt-4 bg-gradient-to-r from-blue-200 to-fuchsia-200 pt-1" />
 
         <div className="mt-6">
           <h2 className="text-xl font-semibold">Rules editor</h2>
           <RulesEditor />
         </div>
 
-        <Separator className="mt-4 pt-1" />
+        <Separator className="mt-4 bg-gradient-to-r from-blue-200 to-fuchsia-200 pt-1" />
 
         <div className="mt-6">
           <h2 className="text-xl font-semibold">Cards pop-up</h2>

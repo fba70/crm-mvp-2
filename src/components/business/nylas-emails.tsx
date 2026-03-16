@@ -1,8 +1,8 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import { MailIcon, RefreshCwIcon, StarIcon } from "lucide-react"
-import { useCallback, useEffect, useState } from "react"
+import { MailIcon, RefreshCwIcon, SaveIcon, StarIcon } from "lucide-react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 interface NylasMessage {
   id: string
@@ -14,6 +14,10 @@ interface NylasMessage {
   unread: boolean
   starred: boolean
 }
+
+// localStorage key — stores ISO date of the newest saved email as the cursor.
+// Emails with date <= this value are filtered out to avoid re-saving.
+const LATEST_DATE_KEY = "nylas_emails_latest_date"
 
 const formatDate = (iso: string | null) => {
   if (!iso) return ""
@@ -86,6 +90,19 @@ const NylasEmails = () => {
   const [error, setError] = useState<string | null>(null)
   const [nextPageToken, setNextPageToken] = useState<string | null>(null)
   const [loadingMore, setLoadingMore] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+
+  // ISO date of the newest email that was already saved — used as dedup cursor.
+  const latestSavedDateRef = useRef<string | null>(
+    typeof window !== "undefined" ? localStorage.getItem(LATEST_DATE_KEY) : null,
+  )
+
+  const filterUnsaved = useCallback((msgs: NylasMessage[]) => {
+    const cursor = latestSavedDateRef.current
+    if (!cursor) return msgs
+    return msgs.filter((m) => m.date !== null && m.date > cursor)
+  }, [])
 
   const fetchMessages = useCallback(
     async (opts: { isManual?: boolean; pageToken?: string; append?: boolean } = {}) => {
@@ -108,10 +125,15 @@ const NylasEmails = () => {
 
         setNextPageToken(data.nextPageToken)
 
+        const fresh = filterUnsaved(data.messages)
+
         if (append) {
-          setMessages((prev) => [...prev, ...data.messages])
+          setMessages((prev) => {
+            const existingIds = new Set(prev.map((m) => m.id))
+            return [...prev, ...fresh.filter((m) => !existingIds.has(m.id))]
+          })
         } else {
-          setMessages(data.messages)
+          setMessages(fresh)
         }
         setError(null)
       } catch (err) {
@@ -122,28 +144,93 @@ const NylasEmails = () => {
         if (append) setLoadingMore(false)
       }
     },
-    [],
+    [filterUnsaved],
   )
 
   useEffect(() => {
     fetchMessages()
   }, [fetchMessages])
 
+  const handleSave = async () => {
+    if (messages.length === 0) return
+    setSaving(true)
+    setSaveError(null)
+
+    try {
+      // Save each email as a separate source record
+      await Promise.all(
+        messages.map((msg) =>
+          fetch("/api/source", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              source: "email",
+              channelId: "nylas",
+              fetchedAt: new Date().toISOString(),
+              oldestTs: msg.date,
+              newestTs: msg.date,
+              messages: [
+                {
+                  authorName: msg.fromName ?? msg.from,
+                  ts: msg.id,
+                  text: msg.snippet,
+                },
+              ],
+            }),
+          }).then((res) => {
+            if (!res.ok) throw new Error(`Failed to save email ${msg.id}`)
+          }),
+        ),
+      )
+
+      // Advance cursor to the newest email's date
+      const newestDate = messages
+        .map((m) => m.date)
+        .filter(Boolean)
+        .sort()
+        .at(-1)!
+
+      latestSavedDateRef.current = newestDate
+      localStorage.setItem(LATEST_DATE_KEY, newestDate)
+
+      // Clear the list — cursor prevents them from reappearing on refresh
+      setMessages([])
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Failed to save")
+    } finally {
+      setSaving(false)
+    }
+  }
+
   return (
     <div className="relative mt-4 flex size-full max-h-[700px] flex-col gap-3">
+      {saveError && <div className="text-destructive text-xs">{saveError}</div>}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <span className="text-muted-foreground text-sm font-medium">Inbox</span>
 
-        <button
-          type="button"
-          className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-xs disabled:opacity-50"
-          disabled={refreshing}
-          onClick={() => fetchMessages({ isManual: true })}
-        >
-          <RefreshCwIcon className={cn("size-3", refreshing && "animate-spin")} />
-          Refresh
-        </button>
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-xs disabled:opacity-50"
+            disabled={refreshing}
+            onClick={() => fetchMessages({ isManual: true })}
+          >
+            <RefreshCwIcon className={cn("size-3", refreshing && "animate-spin")} />
+            Refresh
+          </button>
+
+          <button
+            type="button"
+            className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-xs disabled:opacity-50"
+            disabled={messages.length === 0 || saving}
+            onClick={handleSave}
+          >
+            <SaveIcon className={cn("size-3", saving && "animate-pulse")} />
+            {saving ? "Saving…" : "Save"}
+          </button>
+        </div>
       </div>
 
       {/* List */}
@@ -162,7 +249,7 @@ const NylasEmails = () => {
 
         {!loading && !error && messages.length === 0 && (
           <div className="text-muted-foreground flex h-full items-center justify-center py-16 text-sm">
-            No emails found
+            No new emails
           </div>
         )}
 
