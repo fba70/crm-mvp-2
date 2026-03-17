@@ -197,19 +197,26 @@ const SourceSelector = ({
   selected,
   onToggle,
   loading,
+  onOpen,
 }: {
   sources: SourceRecord[]
   selected: string[]
   onToggle: (id: string) => void
   loading: boolean
+  onOpen?: () => void
 }) => {
   const [open, setOpen] = useState(false)
+
+  const handleOpenChange = (next: boolean) => {
+    if (next) onOpen?.()
+    setOpen(next)
+  }
   const count = selected.length
   const label =
     count === 0 ? "Select sources" : `${count} source${count !== 1 ? "s" : ""}`
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button
           variant={count > 0 ? "secondary" : "outline"}
@@ -564,11 +571,16 @@ const CardsPopUp = () => {
   const [analyzing, setAnalyzing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
+  const fetchSources = useCallback(() => {
+    setSourcesLoading(true)
     axiosApi
       .get<SourceRecord[]>("/api/source?processed=false")
       .then((res) => setSources(res.data))
       .finally(() => setSourcesLoading(false))
+  }, [])
+
+  useEffect(() => {
+    fetchSources()
 
     axiosApi
       .get<RuleRecord[]>("/api/rule")
@@ -581,7 +593,7 @@ const CardsPopUp = () => {
       .get<TruffleCardRecord[]>("/api/truffle-card")
       .then((res) => setCards(res.data))
       .finally(() => setCardsLoading(false))
-  }, [])
+  }, [fetchSources])
 
   const toggleSource = useCallback((id: string) => {
     setSelectedSourceIds((prev) =>
@@ -735,6 +747,7 @@ const CardsPopUp = () => {
           selected={selectedSourceIds}
           onToggle={toggleSource}
           loading={sourcesLoading}
+          onOpen={fetchSources}
         />
         <RuleSelector
           rules={rules}
