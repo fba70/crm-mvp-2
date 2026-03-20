@@ -1,5 +1,6 @@
 "use client"
 
+import dynamic from "next/dynamic"
 import {
   Popover,
   PopoverContent,
@@ -29,14 +30,28 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Checkbox } from "@/components/ui/checkbox"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import axiosApi from "@/lib/axios"
 import { cn } from "@/lib/utils"
-import { CheckIcon, ChevronDownIcon, PlayIcon, Share2Icon } from "lucide-react"
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  Eye,
+  FileTextIcon,
+  PlayIcon,
+  Share2Icon,
+} from "lucide-react"
 import { useState, useEffect, useCallback, useMemo } from "react"
 import Image from "next/image"
 import { toast } from "sonner"
+import "@uiw/react-md-editor/markdown-editor.css"
+
+const MDPreview = dynamic(
+  () => import("@uiw/react-md-editor").then((m) => m.default.Markdown),
+  { ssr: false },
+)
 
 // ─── Local types ─────────────────────────────────────────────────────────────
 
@@ -100,7 +115,20 @@ interface TruffleCardRecord {
   accepted: boolean
   rejectionReason: string | null
   clients: { id: string; name: string }[]
-  sources: { id: string; source: string; channelId: string }[]
+  sources: {
+    id: string
+    source: string
+    channelId: string
+    fetchedAt: string
+    messages: {
+      authorName?: string
+      ts?: string
+      text?: string
+      role?: string
+      content?: string
+    }[]
+  }[]
+  rule: { id: string; title: string; category: string; content: string } | null
   createdAt: string
 }
 
@@ -198,12 +226,16 @@ const SourceSelector = ({
   onToggle,
   loading,
   onOpen,
+  includeProcessed,
+  onIncludeProcessedChange,
 }: {
   sources: SourceRecord[]
   selected: string[]
   onToggle: (id: string) => void
   loading: boolean
   onOpen?: () => void
+  includeProcessed: boolean
+  onIncludeProcessedChange: (v: boolean) => void
 }) => {
   const [open, setOpen] = useState(false)
 
@@ -230,9 +262,22 @@ const SourceSelector = ({
       <PopoverContent className="w-80 p-0" align="start">
         <Command>
           <CommandInput placeholder="Search sources…" />
+          <div className="flex items-center gap-1.5 border-b px-3 py-2">
+            <Checkbox
+              id="include-processed"
+              checked={includeProcessed}
+              onCheckedChange={(v) => onIncludeProcessedChange(v === true)}
+            />
+            <label
+              htmlFor="include-processed"
+              className="text-muted-foreground cursor-pointer text-xs"
+            >
+              Include processed
+            </label>
+          </div>
           <CommandList>
             <CommandEmpty>
-              {loading ? "Loading…" : "No unprocessed sources."}
+              {loading ? "Loading…" : "No sources found."}
             </CommandEmpty>
             <CommandGroup>
               {sources.map((s) => {
@@ -447,6 +492,94 @@ const RejectDialog = ({
   )
 }
 
+// ─── Source messages preview modal ────────────────────────────────────────────
+
+type CardSourceRecord = TruffleCardRecord["sources"][number]
+
+const SourceMessagesModal = ({
+  open,
+  onOpenChange,
+  source,
+}: {
+  open: boolean
+  onOpenChange: (v: boolean) => void
+  source: CardSourceRecord | null
+}) => {
+  if (!source) return null
+  const messages = Array.isArray(source.messages) ? source.messages : []
+  const date = new Date(source.fetchedAt).toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[80vh] max-w-2xl overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>
+            Messages — {source.source} / {source.channelId}
+          </DialogTitle>
+        </DialogHeader>
+        <p className="text-muted-foreground text-xs">
+          {date} · {messages.length} message
+          {messages.length !== 1 ? "s" : ""}
+        </p>
+        <div className="mt-2 flex flex-col gap-3">
+          {messages.length === 0 ? (
+            <span className="text-muted-foreground text-sm">No messages.</span>
+          ) : (
+            messages.map((msg, i) => {
+              const role = msg.authorName ?? msg.role ?? `#${i + 1}`
+              const text = msg.text ?? msg.content ?? ""
+              return (
+                <div key={i} className="rounded-md border p-3 text-sm">
+                  <span className="text-muted-foreground mb-1 block text-xs font-medium uppercase">
+                    {role}
+                  </span>
+                  <p className="break-words whitespace-pre-wrap">{text}</p>
+                </div>
+              )
+            })
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// ─── Rule preview modal ──────────────────────────────────────────────────────
+
+const RulePreviewModal = ({
+  open,
+  onOpenChange,
+  rule,
+}: {
+  open: boolean
+  onOpenChange: (v: boolean) => void
+  rule: TruffleCardRecord["rule"]
+}) => {
+  if (!rule) return null
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[80vh] w-[90vw] max-w-5xl overflow-y-auto sm:max-w-5xl">
+        <DialogHeader>
+          <DialogTitle>{rule.title}</DialogTitle>
+        </DialogHeader>
+        <p className="text-muted-foreground text-xs">
+          Category: <span className="font-medium">{rule.category}</span>
+        </p>
+        <div className="mt-2" data-color-mode="light">
+          <MDPreview source={rule.content} />
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// ─── Analysis result card ────────────────────────────────────────────────────
+
 const AnalysisResultCard = ({
   card,
   onAccept,
@@ -461,15 +594,20 @@ const AnalysisResultCard = ({
   const isHigh = card.priority === "HIGH"
   const clientName = card.clients[0]?.name ?? null
 
+  const [sourceModalOpen, setSourceModalOpen] = useState(false)
+  const [selectedSource, setSelectedSource] = useState<CardSourceRecord | null>(
+    null,
+  )
+  const [ruleModalOpen, setRuleModalOpen] = useState(false)
+  // style={{ height: "480px" }}
   return (
     <Card
       className={cn(
-        "flex w-[340px] shrink-0 flex-col overflow-hidden border",
+        "flex h-[500px] w-[340px] shrink-0 flex-col overflow-hidden border",
         isHigh
           ? "bg-gradient-to-br from-yellow-50 to-pink-100 dark:from-yellow-700 dark:to-slate-900"
           : "bg-gradient-to-br from-slate-100 to-pink-100 dark:from-slate-500 dark:to-slate-900",
       )}
-      style={{ height: "420px" }}
     >
       <CardHeader className="shrink-0 pb-2">
         <CardTitle className="flex flex-row items-center gap-3 text-lg font-semibold">
@@ -521,7 +659,58 @@ const AnalysisResultCard = ({
             {card.message.recommendation}
           </p>
         </div>
+
+        {/* Sources & rule references */}
+        <div className="flex shrink-0 flex-col gap-1 border-t pt-2">
+          {card.sources.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1">
+              <span className="text-muted-foreground text-xs font-medium">
+                Sources:
+              </span>
+              {card.sources.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  className="text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5 rounded px-1 py-0.5 text-xs hover:underline"
+                  onClick={() => {
+                    setSelectedSource(s)
+                    setSourceModalOpen(true)
+                  }}
+                >
+                  <Eye className="size-3" />
+                  {s.source}/{s.channelId}
+                </button>
+              ))}
+            </div>
+          )}
+          {card.rule && (
+            <div className="flex items-center gap-1">
+              <span className="text-muted-foreground text-xs font-medium">
+                Rule:
+              </span>
+              <button
+                type="button"
+                className="text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5 rounded px-1 py-0.5 text-xs hover:underline"
+                onClick={() => setRuleModalOpen(true)}
+              >
+                <FileTextIcon className="size-3" />
+                {card.rule.title}
+              </button>
+            </div>
+          )}
+        </div>
       </CardContent>
+
+      <SourceMessagesModal
+        open={sourceModalOpen}
+        onOpenChange={setSourceModalOpen}
+        source={selectedSource}
+      />
+      <RulePreviewModal
+        open={ruleModalOpen}
+        onOpenChange={setRuleModalOpen}
+        rule={card.rule}
+      />
 
       <CardFooter className="shrink-0 gap-2 pt-2">
         <Button
@@ -565,6 +754,7 @@ const CardsPopUp = () => {
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([])
   const [selectedRuleId, setSelectedRuleId] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState(models[0].id)
+  const [includeProcessed, setIncludeProcessed] = useState(false)
 
   const [cards, setCards] = useState<TruffleCardRecord[]>([])
   const [cardsLoading, setCardsLoading] = useState(true)
@@ -573,11 +763,12 @@ const CardsPopUp = () => {
 
   const fetchSources = useCallback(() => {
     setSourcesLoading(true)
+    const params = includeProcessed ? "" : "?processed=false"
     axiosApi
-      .get<SourceRecord[]>("/api/source?processed=false")
+      .get<SourceRecord[]>(`/api/source${params}`)
       .then((res) => setSources(res.data))
       .finally(() => setSourcesLoading(false))
-  }, [])
+  }, [includeProcessed])
 
   useEffect(() => {
     fetchSources()
@@ -663,6 +854,7 @@ const CardsPopUp = () => {
               message: result.message,
               clientName: result.client,
               sourceIds: selectedSourceIds,
+              ruleId: selectedRuleId,
             })
             .then((r) => r.data),
         ),
@@ -748,6 +940,8 @@ const CardsPopUp = () => {
           onToggle={toggleSource}
           loading={sourcesLoading}
           onOpen={fetchSources}
+          includeProcessed={includeProcessed}
+          onIncludeProcessedChange={setIncludeProcessed}
         />
         <RuleSelector
           rules={rules}

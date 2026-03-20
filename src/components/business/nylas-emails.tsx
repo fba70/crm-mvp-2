@@ -32,7 +32,7 @@ const formatDate = (iso: string | null) => {
 const EmailRow = ({ message }: { message: NylasMessage }) => (
   <div
     className={cn(
-      "flex items-start gap-3 rounded-md px-3 py-2.5 transition-colors hover:bg-muted/50",
+      "hover:bg-muted/50 flex items-start gap-3 rounded-md px-3 py-2.5 transition-colors",
       message.unread && "bg-muted/30",
     )}
   >
@@ -50,7 +50,9 @@ const EmailRow = ({ message }: { message: NylasMessage }) => (
         <span
           className={cn(
             "truncate text-sm",
-            message.unread ? "font-semibold" : "font-medium text-muted-foreground",
+            message.unread
+              ? "font-semibold"
+              : "text-muted-foreground font-medium",
           )}
         >
           {message.fromName ?? message.from}
@@ -95,7 +97,9 @@ const NylasEmails = () => {
 
   // ISO date of the newest email that was already saved — used as dedup cursor.
   const latestSavedDateRef = useRef<string | null>(
-    typeof window !== "undefined" ? localStorage.getItem(LATEST_DATE_KEY) : null,
+    typeof window !== "undefined"
+      ? localStorage.getItem(LATEST_DATE_KEY)
+      : null,
   )
 
   const filterUnsaved = useCallback((msgs: NylasMessage[]) => {
@@ -105,7 +109,9 @@ const NylasEmails = () => {
   }, [])
 
   const fetchMessages = useCallback(
-    async (opts: { isManual?: boolean; pageToken?: string; append?: boolean } = {}) => {
+    async (
+      opts: { isManual?: boolean; pageToken?: string; append?: boolean } = {},
+    ) => {
       const { isManual = false, pageToken, append = false } = opts
       if (isManual) setRefreshing(true)
       if (append) setLoadingMore(true)
@@ -203,7 +209,7 @@ const NylasEmails = () => {
   }
 
   return (
-    <div className="relative mt-4 flex size-full max-h-[700px] flex-col gap-3">
+    <div className="relative mt-4 flex size-full max-h-[360px] flex-col gap-3">
       {saveError && <div className="text-destructive text-xs">{saveError}</div>}
 
       {/* Header */}
@@ -217,7 +223,9 @@ const NylasEmails = () => {
             disabled={refreshing}
             onClick={() => fetchMessages({ isManual: true })}
           >
-            <RefreshCwIcon className={cn("size-3", refreshing && "animate-spin")} />
+            <RefreshCwIcon
+              className={cn("size-3", refreshing && "animate-spin")}
+            />
             Refresh
           </button>
 

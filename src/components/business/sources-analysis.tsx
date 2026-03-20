@@ -24,8 +24,10 @@ import {
 import { Button } from "@/components/ui/button"
 import axiosApi from "@/lib/axios"
 import { useEffect, useState, useCallback } from "react"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Eye, RefreshCw, Trash2 } from "lucide-react"
 import { toast } from "sonner"
+import { cn } from "@/lib/utils"
 
 const PAGE_SIZE = 5
 
@@ -124,11 +126,13 @@ const SourcesAnalysis = () => {
   )
   const [modalOpen, setModalOpen] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [includeProcessed, setIncludeProcessed] = useState(false)
 
   const fetchSources = useCallback(() => {
     setLoading(true)
+    const params = includeProcessed ? "" : "?processed=false"
     axiosApi
-      .get<SourceRecord[]>("/api/source?processed=false")
+      .get<SourceRecord[]>(`/api/source${params}`)
       .then((res) => {
         setSources(res.data)
         setError(null)
@@ -137,7 +141,7 @@ const SourcesAnalysis = () => {
         setError(err instanceof Error ? err.message : "Failed to load sources"),
       )
       .finally(() => setLoading(false))
-  }, [])
+  }, [includeProcessed])
 
   useEffect(() => {
     fetchSources()
@@ -167,24 +171,33 @@ const SourcesAnalysis = () => {
   return (
     <div className="relative mt-4 flex size-full flex-col gap-4">
       <div className="flex items-center justify-between">
-        <span className="text-muted-foreground text-sm font-medium">
-          Unprocessed sources (
-          {!loading && (
-            <span className="text-muted-foreground px-1 text-xs">
-              {sources.length} record{sources.length !== 1 ? "s" : ""}
-            </span>
-          )}
-          ):
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-muted-foreground text-sm font-medium">
+            {includeProcessed ? "All" : "Unprocessed"} sources
+            {!loading && (
+              <span className="text-muted-foreground px-1 text-xs">
+                ({sources.length} record{sources.length !== 1 ? "s" : ""})
+              </span>
+            )}
+          </span>
+          <label className="flex items-center gap-1.5 cursor-pointer">
+            <Checkbox
+              checked={includeProcessed}
+              onCheckedChange={(v) => setIncludeProcessed(v === true)}
+            />
+            <span className="text-muted-foreground text-xs">Include processed</span>
+          </label>
+        </div>
 
         <Button
           variant="ghost"
-          size="sm"
-          className="h-7 text-xs"
+          size="xs"
+          className="h-7 text-xs text-gray-500"
           onClick={fetchSources}
           disabled={loading}
         >
-          <RefreshCw className={loading ? "animate-spin" : "text-gray-500"} />
+          <RefreshCw className={cn("size-3", loading && "animate-spin")} />{" "}
+          Refresh
         </Button>
       </div>
 

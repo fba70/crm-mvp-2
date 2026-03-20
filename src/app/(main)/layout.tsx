@@ -5,7 +5,7 @@ export default async function MainLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <div className="grid h-screen grid-rows-[61px_1fr_50px] flex-col">
+    <div className="grid h-screen grid-rows-[65px_1fr_50px] flex-col">
       <section className="row-start-1">
         {" "}
         <Navbar />

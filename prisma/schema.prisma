@@ -323,6 +323,8 @@ model Rule {
   userId    String
   user      User     @relation(fields: [userId], references: [id])
 
+  truffleCards TruffleCard[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -351,6 +353,9 @@ model TruffleCard {
   // Relations
   clients Client[]
   sources Source[]
+
+  ruleId String?
+  rule   Rule?   @relation(fields: [ruleId], references: [id])
 
   feedId String? @unique
   feed   Feed?   @relation(fields: [feedId], references: [id])

@@ -16,7 +16,16 @@ export async function GET() {
     },
     include: {
       clients: { select: { id: true, name: true } },
-      sources: { select: { id: true, source: true, channelId: true } },
+      sources: {
+        select: {
+          id: true,
+          source: true,
+          channelId: true,
+          fetchedAt: true,
+          messages: true,
+        },
+      },
+      rule: { select: { id: true, title: true, category: true, content: true } },
     },
     orderBy: { createdAt: "desc" },
   })
@@ -37,12 +46,14 @@ export async function POST(req: Request) {
       message,
       clientName,
       sourceIds,
+      ruleId,
     }: {
       priority: TruffleCardPriority
       category: FeedType
       message: { analysis: string; recommendation: string }
       clientName: string | null
       sourceIds: string[]
+      ruleId?: string
     } = await req.json()
 
     // Resolve client by name (case-insensitive) if provided
@@ -63,10 +74,20 @@ export async function POST(req: Request) {
         userId: session.user.id,
         clients: { connect: clientConnect },
         sources: { connect: sourceIds.map((id) => ({ id })) },
+        ...(ruleId && { rule: { connect: { id: ruleId } } }),
       },
       include: {
         clients: { select: { id: true, name: true } },
-        sources: { select: { id: true, source: true, channelId: true } },
+        sources: {
+          select: {
+            id: true,
+            source: true,
+            channelId: true,
+            fetchedAt: true,
+            messages: true,
+          },
+        },
+        rule: { select: { id: true, title: true, category: true, content: true } },
       },
     })
 

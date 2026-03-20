@@ -20,7 +20,7 @@ export async function Navbar() {
 
   return (
     <header className="border-b bg-gradient-to-b from-blue-500 to-fuchsia-500">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2">
         <Link href="/dashboard" className="flex items-center gap-4 text-white">
           <Image
             src="/T_logo_2.jpg"
