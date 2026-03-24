@@ -74,7 +74,7 @@ export async function POST(req: Request) {
         userId: session.user.id,
         clients: { connect: clientConnect },
         sources: { connect: sourceIds.map((id) => ({ id })) },
-        ...(ruleId && { rule: { connect: { id: ruleId } } }),
+        ...(ruleId && { ruleId }),
       },
       include: {
         clients: { select: { id: true, name: true } },
@@ -101,6 +101,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(card, { status: 201 })
   } catch (err) {
+    console.error("[truffle-card POST] error:", err)
     const message = err instanceof Error ? err.message : String(err)
     return NextResponse.json({ error: message }, { status: 500 })
   }
